@@ -1,0 +1,108 @@
+
+
+
+1. Which destination in the flights database is the furthest distance away, based on information in the flights table. Show the SQL query(s) that support your conclusion.
+
+	JFK to HNL is a distance of 4983 Kilometers
+	
+	select distinct origin, dest, distance from flights where distance=(select max(distance) from flights)
+
+
+
+
+
+2. What are the different numbers of engines in the planes table? For each number of engines, which aircraft have the most number of seats? Show the SQL statement(s) that support your result.
+
+
+-- 1 2 3 and 4
+select distinct engines  from planes;
+
+--
+select model, engines, max(seats) as seats from planes group by engines having max(seats);
+
+	model		engines	seats
+	EMB-145XR	2	400
+	150		1	16
+	A340-313	4	450
+	A330-223	3	379
+
+
+
+
+
+3. Show the total number of flights.
+
+select count(*) from flights
+
+
+
+
+
+4. Show the total number of flights by airline (carrier).
+
+select  a.carrier,  a.name, count(*)  from flights f, planes p, airlines a
+		where f.tailnum=p.tailnum and f.carrier=a.carrier 
+        group by a.carrier, a.name;
+
+
+
+
+
+5. Show all of the airlines, ordered by number of flights in descending order.
+
+select  a.carrier,  a.name, count(*)  from flights f, airlines a
+		where f.carrier=a.carrier 
+        group by a.carrier, a.name
+        order by 3 desc;
+
+
+
+
+
+6. Show only the top 5 airlines, by number of flights, ordered by number of flights in descending order.
+
+     
+select  a.carrier,  a.name, count(*)  from flights f, airlines a
+		where f.carrier=a.carrier 
+        group by a.carrier, a.name
+        order by 3 desc limit 5;
+        
+
+
+
+
+
+7. Show only the top 5 airlines, by number of flights of distance 1,000 miles or greater, ordered by number of flights in descending order.
+
+select  a.carrier,  a.name, count(*)  from flights f, airlines a
+		where f.carrier=a.carrier and f.distance >= 1000
+        group by a.carrier, a.name
+        order by 3 desc limit 5;
+        
+
+
+
+8. Create a question that (a) uses data from the flights database, and (b) requires aggregation to answer it, and write down both the question, and the query that answers the question.
+
+
+-- Question : i am curious to know the relationship between the range of airtime for a given distance
+--             i.e. if x= airtime range and y = distance, is the graph more linear  or exponential ?
+--
+-- Answer :  this query tells me that the x,y graph is of course positive but with very small slope, 
+--			i.e. the ratio of the range of airtime to distance decreases as distance increases
+
+
+select origin, dest, distance,
+		max(air_time) as longest_flight,   min(air_time) as shortest_flight, 
+        max(air_time)-min(air_time) as the_range_of_airtime,
+        (max(air_time)-min(air_time)) / distance as the_ratio,
+		count(*) as flight_count 
+        from flights 
+        where air_time is not null      -- ignore incomplete data
+        group by origin, dest, distance
+        having count(*) > 45			-- arbitrary number to control the statistical significance
+order by distance;
+
+
+
+
