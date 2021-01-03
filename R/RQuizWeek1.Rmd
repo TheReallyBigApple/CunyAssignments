@@ -1,0 +1,327 @@
+---
+title: "Quiz_Week1"
+author: "Tom Buonora"
+date: "January 2, 2021"
+output: html_document
+---
+
+<style type="text/css">
+body {
+font-size: 18px;
+color: blue;
+}
+pre {
+  font-size: 12px;
+  color: maroon;
+}
+</style>
+
+
+
+
+
+<br><br>
+
+1. Create a vector that contains 20 numbers. (You may choose whatever numbers you like, but make sure there are some duplicates.)
+
+```{r Q1}
+
+# Jet win total for the past 20 years
+vector_num1 = c(2,7,4,5,5,10,4,8,6,8,11,9,9,4,10,4,10,6,9,10)
+length(vector_num1)           # 20
+
+```
+<br><br>
+
+2. Use R to convert the vector from question 1 into a character vector.
+
+
+```{r Q2}
+
+
+vector_char1 <- as.character(vector_num1)
+
+class(vector_char1)            # character
+
+
+```
+<br><br>
+3. Use R to convert the vector from question 1 into a vector of factors
+
+```{r Q3}
+
+
+vector_factor1<-factor(vector_char1)
+class(vector_factor1)       # factor
+
+
+```
+<br><br>
+4. Use R to show how many levels the vector in the previous question has.
+
+
+```{r Q4}
+
+
+# note: R puts 10 and 11 before 2 since we created it from characters
+nlevels(vector_factor1)  # 9
+levels(vector_factor1)   #  "10" "11" "2"  "4"  "5"  "6"  "7"  "8"  "9"
+
+
+```
+<br><br>
+ 5. Use R to create a vector that takes the vector from question 1 and performs on it the formula 3^2−4X+1.
+
+```{r Q5}
+
+(3*vector_num1^2) - (4*vector_num1)  + 1
+
+
+```
+<br><br>
+6. Create a named list. 
+
+```{r Q6}
+
+
+jets_defense = list(dline=c("Williams","Fatukasi","Anderson"), linebackers =c("Hewitt","Jenkins","Langi","Williamson"), secondary= c("Poole","Austin","Maye","Desir") )
+
+names(jets_defense)
+jets_defense["dline"]
+
+
+
+```
+<br><br>
+7. Create a data frame with four columns – one each character, factor (with three levels), numeric, and date. 
+
+```{r Q7}
+
+player = c("Norm Van Brocklin", "Matt Schaub", "Warren Moon", "Boomer Esiason")
+era = c("Fifties","Current","Nineties","Nineties")
+yards = c(554,527,527,522)
+date = c(as.Date("1951-09-28"),as.Date("2012-11-18"), as.Date("1990-12-16"), as.Date("1996-11-10"))
+
+ # note: my data frames converted to character by default so here i have to explicitly call factor()
+qb_best_games <- data.frame(player,era = factor(era), yards, date)
+```
+<br><br>
+8. Illustrate how to add a row with a value for the factor column that isn’t already in the list of levels.
+
+```{r Q8}
+
+
+# this requires to replace the era column with itself, but specify the levels with the new level added
+lvls <- levels(qb_best_games$era)
+lvls[length(lvls) + 1] <- 'Eighties'
+qb_best_games$era <- factor(qb_best_games$era, levels = lvls)
+
+qb_best_games<-rbind(qb_best_games,data.frame(player= "Phil Sims", era= factor("Eighties"), yards = 513, date= as.Date('1085-10-13')))
+
+```
+<br><br>
+9. Show the code that would read in a CSV file called temperatures.csv
+
+```{r Q9}
+
+qb_games <- read.csv("C:\\Users\\arono\\Documents\\R\\SportsStats\\qb_best_games.csv")
+
+head(qb_games,10)
+
+
+```
+<br><br>
+ 10. Use a loop to calculate the final balance, rounded to the nearest cent, in an account that earns 3.24% interest 
+               compounded monthly after six years if the original balance is $1,500.
+```{r Q10}
+
+
+principal <- 1500
+rate <- .0324
+freq <- 12
+years <- 6
+
+for (rolls in 1:(freq*years))
+{
+  principal=principal*(1+(rate/freq))
+}
+
+sprintf("%.2f",principal)
+  # format method perhaps not as functional as sprintf
+format(principal, digits=6, nsmall=2)
+
+
+
+
+```
+<br><br>
+11. Create a numeric vector of length 20 and then write code to calculate the sum of every third element of the vector you have created.
+
+```{r Q11}
+# Jet win total for the past 20 years
+vector_num1 = c(2,7,4,5,5,10,4,8,6,8,11,9,9,4,10,4,10,6,9,10)
+
+vector_num1%%3                          # all the values of vector_num1  mod 3
+vector_num1[1:20%%3==0]                 # the values of every 3rd number, i.e.  4 10  6  9 10  6
+
+sum(vector_num1[1:20%%3==0])            # 45 = 4+10+6+9+10+6
+
+```
+<br><br>
+
+12. Use a for loop to calculate : $\sum_{i=1}^{10} 2^i$
+
+
+
+```{r Q12}
+
+
+x=2
+sumx=0
+
+for (i in 1:10)
+{
+  sumx=sumx+x^i            # series is {2,4,8,16...1024}
+}
+sumx                        # 2046
+
+
+
+```
+<br><br>
+13. Use a while loop to accomplish the same task as in the previous exercise
+
+```{r Q13}
+
+
+x=2
+sumx=0
+i=1
+
+while (i <= 10)
+{
+  sumx=sumx+x^i            # series is {2,4,8,16...1024}
+  i=i+1
+}
+
+print(sumx)                        # 2046
+
+```
+
+<br><br>
+14. Solve the problem from the previous two exercises without using a loop.
+
+```{r Q14}
+sumx<-sum(2^(1:10))
+sumx
+```
+
+<br><br>
+
+15. Bonus : Work on Equations
+
+See [here](https://www.math.mcgill.ca/yyang/regression/RMarkdown/example.html) for more info
+
+
+
+Inline mathematical material is set off by the use of single dollar-sign characters. This is better to integrate text and equations.
+
+
+
+This (\$\sum_{i=1}^n X_i\$)  is inline:  $\sum_{i=1}^n X_i$
+
+Display form uses 2 dollar signs. ( use backslash if you every want to display a dollar sign )
+
+$$\sum_{i=1}^n X_i$$
+<br><br>
+
+
+Underline for subscript. Carot for superscript. If the expression is more than one letter,then use brackets
+\$\$prin^{1+rate}\$\$
+
+$$prin^{1+rate}$$
+
+<br><br>
+
+Doesnt matter if subscript or superscript comes first
+\$\$X^2_{i,j}\$\$
+
+$$X^2_{i,j}$$
+<br><br>
+\$\$X_{i,j}^2\$\$
+$$X_{i,j}^2$$
+<br><br>
+
+Use \sqrt for square root
+\$\$\sqrt{b^2 - 4ac}\$\$
+$$\sqrt{b^2 - 4ac}$$
+<br><br>
+
+Displayed fractions are typeset using the \frac operator.
+
+\$\$\frac{4z^3}{16}\$\$
+$$\frac{4z^3}{16}$$
+<br><br>
+Calculate the sum of $2^i$ where i is 1:10
+
+\$\$\sum_{i=1}^{10} 2^i\$\$
+$$\sum_{i=1}^{10} 2^i$$
+
+<br><br>
+
+use \\left and \\right to generate full size parenthesis
+\$\$\sum_{i=1}^{n}\left( \frac{X_i}{Y_i} \right)\$\$
+$$\sum_{i=1}^{n}\left( \frac{X_i}{Y_i} \right)$$
+
+Greek letters :
+
+$$\alpha, \beta,  \gamma, \Gamma$$
+
+$x \ge 15$
+$x \le 15$
+
+<br><br>
+n choose k
+$$n \choose k$$
+
+
+<br><br><br><br><br><br>
+
+<p style="color:gold;font-size:24px;font-weight:bold;text-align:center;text-decoration: underline;">More Notes</p>
+
+
+<!-- <center><u>More Notes</u></center> -->
+
+<br><br>
+
+<!-- <p style="color:gold;font-size:24px;font-weight:bold;text-align:center;>More Notes</p> -->
+
+
+
+<p style="color:black;">Notes About Latex</p>
+
+<ol>
+   <li>Matrixes are achieved via begin and end for vmatrix, matrix or array</li>
+   <li>italics 1 asterix</li>
+   <li>bold    2 asterixes</li>
+   <li>subscript tilde </li>
+   <li>superscript carot </li>
+</ol>
+
+<i>Note : Latex is but one method to format equations. MathML and MathJAX are 2 others</i>
+
+
+
+<br><br><br><br>
+
+
+<p style="color:black;">Notes About Font/Color Formatting</p>
+
+
+<ol>
+   <li>Markdown and Colab both can incorprate basic html but its painful, syntax errors will not be reported !
+   <li> see https://www.w3schools.com/cssref/ for css reference
+   <li>legacy tags like \<center\>\<u\>\<b\> work but styles and css files would be better
+   <li> i only got the css classes working for "pre" and "body", not for r.code
+   <li>also note while saving off your html is nice. Its the rmd file you want to save as that is the true source code.
+</ol>

@@ -1,0 +1,102 @@
+---
+title: "TomTest2"
+author: "Tom Buonora"
+professor: Jeffrey Nieman
+date: "December 17, 2020"
+output: html_document
+rpubs: https://rpubs.com/BigApple/705610
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction to R Markdown
+
+This is my first R Markdown document for a R workshop prep for the CUNY MSDS program. 
+
+I found a good cheat sheet to assist me [here](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
+
+Here are the class assignments...
+
+
+
+```{r factorial, echo=TRUE}
+
+#  do what factorial(12) does
+
+fact<- 1
+
+for ( x in 1:12)
+{
+  fact<-fact*x
+}
+
+print (fact)
+```
+
+
+
+
+```{r sequence}
+# print every 5 numbers
+every5<-seq(from=20,to=50,by=5) 
+print(every5)
+```
+
+
+
+```{r quadratic}
+quadratic <- function(a,b,c) {
+    z<-sqrt(b^2 - (4 * a * c))
+    w1= ( b * -1 ) + z
+    w2=  ( b * -1 ) - z
+    f1=w1/(2*a)
+    f2=w2/(2*a)
+    print ( f1 )
+    print ( f2 )  
+}
+quadratic(1,0,-9)
+```
+
+
+
+*I found some interesting functionality to format equations.  This works to display the quadratic root*
+
+$$\sqrt{b^2 - 4ac}$$
+
+        
+*But I \*think\* to display the full equation you need to use the \<math\> block*
+        
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mrow>
+    <mi>x</mi>
+    <mo>=</mo>
+    <mfrac>
+      <mrow>
+        <mo>&#x2212;</mo>
+        <mi>b</mi>
+        <mo>&#xB1;</mo>
+        <msqrt>
+          <mrow>
+            <msup>
+              <mi>b</mi>
+              <mn>2</mn>
+            </msup>
+            <mo>&#x2212;</mo>
+            <mn>4</mn>
+            <mi>a</mi>
+            <mi>c</mi>
+          </mrow>
+        </msqrt>
+      </mrow>
+      <mrow>
+        <mn>2</mn>
+        <mi>a</mi>
+      </mrow>
+    </mfrac>
+  </mrow>
+</math>
+
+
+
