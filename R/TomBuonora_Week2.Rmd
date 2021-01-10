@@ -10,64 +10,44 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-<style type="text/css">
-body {
-font-size: 16px;
-color: black;
-}
-
-pre {
-  font-size: 16px;
-  color: maroon;
-}
-</style>
-
-
 
 <br>
 <h1><center>Exercises in Data Frames</center></h1>
 <br>
 
-*The data set is a survey of 4700 students who commute to college. 
-Attributes include the distance they commute, their high school GPA,
-their parents education. <br><br><br>
-In this exercise, we look to see if there is a relationship between
-parents education and either distance or high school GPA
+The data set is a survey of 4700 students who commute to college. 
+
+Attributes include 
+<ol>
+  <li> the distance they commute
+  <li> their high school GPA
+  <li> if father or mother is a college graduate
+</ol>
+
 <br>
 The results indicate some correlation between parents education and shorter distances, as well as increased high school GPA.
 <br>
 The final figures display the outliers of very short and very long distances.
 
-*
 
-<br><br><br>
-
-Issues that I faced :
-<ol>
-  <li> Couldnt get the gitbhub download to work
-  <li> Im trying to integrate some css styles but it sometimes works, sometimes doesnt
-</ol>
 
 <br><br><br>
 
 
 ```{r read data}
-CollegeDistance.df  <- read.csv("C:\\Users\\arono\\CUNY\\R\\CollegeDistance.csv")
+# CollegeDistance.df  <- read.csv("C:\\Users\\arono\\CUNY\\R\\CollegeDistance.csv")
 
 
-# none of this worked :(
 
-# library (RCurl)
-# download <- getURL("http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv?accessType=DOWNLOAD")
-# CollegeDistance.df <- read.csv (text = download)
-# CollegeDistance.df  <- read.csv2("http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv")
-# tmpFile <- tempfile()
-# download.file("http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv", destfile = tmpFile, method = "curl")
-# url<-"http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv"
-# url<-"http://raw.github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv"
-#  library(RCurl)
-# x <- getURL(url)
-#  CollegeDistance.df <- read.csv(text = x)
+# note the url puts "main" between my folders
+url<-"https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/R/CollegeDistance.csv"
+library(httr)
+library(RCurl)
+x <- getURL(url)
+
+CollegeDistance.df  <- read.csv(text=x, header=T)
+
+
 
 ```
 
@@ -82,7 +62,10 @@ CollegeDistance.df  <- read.csv("C:\\Users\\arono\\CUNY\\R\\CollegeDistance.csv"
 ```{r problem1}
 library(knitr)
 
+# how do i format this nicely ?
+
 knitr::kable(summary(CollegeDistance.df, caption='Summary of all Students'))          # score mean = 50.89
+
 
 
 score_mean<-round(mean(CollegeDistance.df$score),2) 
@@ -144,7 +127,8 @@ names(UrbanCollegeEducatedDistance.df)[names(UrbanCollegeEducatedDistance.df) ==
 <br>
 ```{r problem4}
 
-summary(UrbanCollegeEducatedDistance.df)
+knitr::kable(summary(UrbanCollegeEducatedDistance.df), caption='College Scores and Distances Subset')
+# summary(UrbanCollegeEducatedDistance.df)
 
 
 score_mean<-round(mean(UrbanCollegeEducatedDistance.df$u_avg_score_as_HS_Senior),2) 

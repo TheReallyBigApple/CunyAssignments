@@ -393,17 +393,6 @@ summary {
 </div>
 
 
-<style type="text/css">
-body {
-font-size: 16px;
-color: black;
-}
-
-pre {
-  font-size: 16px;
-  color: maroon;
-}
-</style>
 <br>
 <h1>
 <center>
@@ -411,41 +400,37 @@ Exercises in Data Frames
 </center>
 </h1>
 <p><br></p>
-<p>*The data set is a survey of 4700 students who commute to college. Attributes include the distance they commute, their high school GPA, their parents education. <br><br><br> In this exercise, we look to see if there is a relationship between parents education and either distance or high school GPA <br> The results indicate some correlation between parents education and shorter distances, as well as increased high school GPA. <br> The final figures display the outliers of very short and very long distances.</p>
-<ul>
-<li></li>
-</ul>
-<p><br><br><br></p>
-Issues that I faced :
+<p>The data set is a survey of 4700 students who commute to college.</p>
+Attributes include
 <ol>
 <li>
-Couldnt get the gitbhub download to work
+the distance they commute
 <li>
-Im trying to integrate some css styles but it sometimes works, sometimes doesnt
+their high school GPA
+<li>
+if father or mother is a college graduate
 </ol>
+<p><br> The results indicate some correlation between parents education and shorter distances, as well as increased high school GPA. <br> The final figures display the outliers of very short and very long distances.</p>
 <p><br><br><br></p>
-<pre class="r"><code>CollegeDistance.df  &lt;- read.csv(&quot;C:\\Users\\arono\\CUNY\\R\\CollegeDistance.csv&quot;)
+<pre class="r"><code># CollegeDistance.df  &lt;- read.csv(&quot;C:\\Users\\arono\\CUNY\\R\\CollegeDistance.csv&quot;)
 
 
-# none of this worked :(
 
-# library (RCurl)
-# download &lt;- getURL(&quot;http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv?accessType=DOWNLOAD&quot;)
-# CollegeDistance.df &lt;- read.csv (text = download)
-# CollegeDistance.df  &lt;- read.csv2(&quot;http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv&quot;)
-# tmpFile &lt;- tempfile()
-# download.file(&quot;http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv&quot;, destfile = tmpFile, method = &quot;curl&quot;)
-# url&lt;-&quot;http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv&quot;
-# url&lt;-&quot;http://raw.github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv&quot;
-#  library(RCurl)
-# x &lt;- getURL(url)
-#  CollegeDistance.df &lt;- read.csv(text = x)</code></pre>
+# note the url puts &quot;main&quot; between my folders
+url&lt;-&quot;https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/R/CollegeDistance.csv&quot;
+library(httr)
+library(RCurl)
+x &lt;- getURL(url)
+
+CollegeDistance.df  &lt;- read.csv(text=x, header=T)</code></pre>
 <p><br></p>
 <ol style="list-style-type: decimal">
 <li>Use the summary function to gain an overview of the data set. Then display the mean and median for at least two attributes.</li>
 </ol>
 <p><br></p>
 <pre class="r"><code>library(knitr)
+
+# how do i format this nicely ?
 
 knitr::kable(summary(CollegeDistance.df, caption=&#39;Summary of all Students&#39;))          # score mean = 50.89</code></pre>
 <table style="width:100%;">
@@ -664,22 +649,90 @@ names(UrbanCollegeEducatedDistance.df)[names(UrbanCollegeEducatedDistance.df) ==
 <li>Use the summary function to create an overview of your new data frame. The print the mean and median for the same two attributes. Please compare.</li>
 </ol>
 <p><br></p>
-<pre class="r"><code>summary(UrbanCollegeEducatedDistance.df)</code></pre>
-<pre><code>##      u_sort        u_gender         u_ethnicity        u_avg_score_as_HS_Senior
-##  Min.   :   31   Length:77          Length:77          Min.   :37.99           
-##  1st Qu.: 1635   Class :character   Class :character   1st Qu.:50.96           
-##  Median : 2506   Mode  :character   Mode  :character   Median :58.82           
-##  Mean   : 5569                                         Mean   :56.25           
-##  3rd Qu.: 3659                                         3rd Qu.:62.44           
-##  Max.   :26310                                         Max.   :71.36           
-##    u_distance        urban          
-##  Min.   :0.0000   Length:77         
-##  1st Qu.:0.3000   Class :character  
-##  Median :0.5000   Mode  :character  
-##  Mean   :0.6727                     
-##  3rd Qu.:0.8000                     
-##  Max.   :3.2000</code></pre>
-<pre class="r"><code>score_mean&lt;-round(mean(UrbanCollegeEducatedDistance.df$u_avg_score_as_HS_Senior),2) 
+<pre class="r"><code>knitr::kable(summary(UrbanCollegeEducatedDistance.df), caption=&#39;College Scores and Distances Subset&#39;)</code></pre>
+<table>
+<caption>College Scores and Distances Subset</caption>
+<colgroup>
+<col width="2%" />
+<col width="12%" />
+<col width="15%" />
+<col width="15%" />
+<col width="23%" />
+<col width="13%" />
+<col width="15%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">u_sort</th>
+<th align="left">u_gender</th>
+<th align="left">u_ethnicity</th>
+<th align="left">u_avg_score_as_HS_Senior</th>
+<th align="left">u_distance</th>
+<th align="left">urban</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">Min. : 31</td>
+<td align="left">Length:77</td>
+<td align="left">Length:77</td>
+<td align="left">Min. :37.99</td>
+<td align="left">Min. :0.0000</td>
+<td align="left">Length:77</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">1st Qu.: 1635</td>
+<td align="left">Class :character</td>
+<td align="left">Class :character</td>
+<td align="left">1st Qu.:50.96</td>
+<td align="left">1st Qu.:0.3000</td>
+<td align="left">Class :character</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">Median : 2506</td>
+<td align="left">Mode :character</td>
+<td align="left">Mode :character</td>
+<td align="left">Median :58.82</td>
+<td align="left">Median :0.5000</td>
+<td align="left">Mode :character</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Mean : 5569</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Mean :56.25</td>
+<td align="left">Mean :0.6727</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">3rd Qu.: 3659</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">3rd Qu.:62.44</td>
+<td align="left">3rd Qu.:0.8000</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">Max. :26310</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Max. :71.36</td>
+<td align="left">Max. :3.2000</td>
+<td align="left">NA</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># summary(UrbanCollegeEducatedDistance.df)
+
+
+score_mean&lt;-round(mean(UrbanCollegeEducatedDistance.df$u_avg_score_as_HS_Senior),2) 
 score_median&lt;-round(median(UrbanCollegeEducatedDistance.df$u_avg_score_as_HS_Senior),2)
 
 distance_mean&lt;-round(mean(UrbanCollegeEducatedDistance.df$u_distance),2)
