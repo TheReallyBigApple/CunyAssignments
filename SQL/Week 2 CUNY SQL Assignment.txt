@@ -1,0 +1,81 @@
+
+CREATE SCHEMA `videos`;
+
+
+
+use videos;
+
+CREATE TABLE video (
+id		integer,
+title		varchar(240),
+length_minutes	integer,
+url		varchar(240)
+);
+
+create unique INDEX video_i0 on video(id);
+
+
+insert video values(1,"MySQL Tutorial for Beginners [Full Course]", 190,"https://www.youtube.com/watch?v=7S_tz1z_5bA");
+
+insert video values(2,"MySQL Tutorial For Beginners | Introduction to MySQL | Learn MySQL | MySQL Training | Edureka",125,"https://www.youtube.com/watch?v=WmGgxTpGs_8");
+
+insert video values(3,"MySQL Crash Course | Learn SQL",71,"https://www.youtube.com/watch?v=9ylj9NR0Lcg");
+
+
+
+
+
+
+DROP TABLE IF EXISTS reviews;
+
+
+
+-- the table is called reviews since the key is reviewer and video
+CREATE TABLE reviews (
+reviewer		varchar(120),
+video_id	integer,
+rating		int null check (rating between 1 and 5),		-- from 1 to 5
+review		text
+);
+
+create unique INDEX reviews_i0 on reviews(reviewer, video_id);
+
+insert reviews values("Ash", 1, 4, "Solid tutorial but it could have been shorter");
+
+insert reviews values("Cyn", 1, 5, "The only tutorial you need");
+
+insert reviews values("Gladys", 1, 2, "Felt like it could have been done in 30 minutes");
+
+
+insert reviews values("Cyn", 2, 3, "The material was good, but why was she screaming ?");
+
+insert reviews values("Gladys", 2, 2, "Difficult to sit through");
+
+
+insert reviews values("Ash", 3, 5, "The presentation was clear and well paced. Best lesson of them all");
+
+insert reviews values("Cyn", 3, 5, "Excellent class.");
+
+
+select video.title, video.length_minutes, reviews.reviewer,
+	reviews.rating, reviews.review from video left join reviews on reviews.video_id=video.id; 
+
+
+
+
+
+
+
+
+Exported Results Below
+
+
+
+# title	length_minutes	reviewer	rating	review
+MySQL Crash Course | Learn SQL	71	Cyn	5	Excellent class.
+MySQL Crash Course | Learn SQL	71	Ash	5	The presentation was clear and well paced. Best lesson of them all
+MySQL Tutorial For Beginners | Introduction to MySQL | Learn MySQL | MySQL Training | Edureka	125	Gladys	2	Difficult to sit through
+MySQL Tutorial For Beginners | Introduction to MySQL | Learn MySQL | MySQL Training | Edureka	125	Cyn	3	The material was good, but why was she screaming ?
+MySQL Tutorial for Beginners [Full Course]	190	Ash	4	Solid tutorial but it could have been shorter
+MySQL Tutorial for Beginners [Full Course]	190	Cyn	5	The only tutorial you need
+MySQL Tutorial for Beginners [Full Course]	190	Gladys	2	Felt like it could have been done in 30 minutes
