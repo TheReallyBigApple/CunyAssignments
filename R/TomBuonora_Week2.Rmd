@@ -1,0 +1,217 @@
+---
+title: "CUNY MSDS R Week 2 Assignment"
+author: "Tom Buonora"
+date: "January 9, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+<style type="text/css">
+body {
+font-size: 16px;
+color: black;
+}
+
+pre {
+  font-size: 16px;
+  color: maroon;
+}
+</style>
+
+
+
+<br>
+<h1><center>Exercises in Data Frames</center></h1>
+<br>
+
+*The data set is a survey of 4700 students who commute to college. 
+Attributes include the distance they commute, their high school GPA,
+their parents education. <br><br><br>
+In this exercise, we look to see if there is a relationship between
+parents education and either distance or high school GPA
+<br>
+The results indicate some correlation between parents education and shorter distances, as well as increased high school GPA.
+<br>
+The final figures display the outliers of very short and very long distances.
+
+*
+
+<br><br><br>
+
+Issues that I faced :
+<ol>
+  <li> Couldnt get the gitbhub download to work
+  <li> Im trying to integrate some css styles but it sometimes works, sometimes doesnt
+</ol>
+
+<br><br><br>
+
+
+```{r read data}
+CollegeDistance.df  <- read.csv("C:\\Users\\arono\\CUNY\\R\\CollegeDistance.csv")
+
+
+# none of this worked :(
+
+# library (RCurl)
+# download <- getURL("http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv?accessType=DOWNLOAD")
+# CollegeDistance.df <- read.csv (text = download)
+# CollegeDistance.df  <- read.csv2("http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv")
+# tmpFile <- tempfile()
+# download.file("http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv", destfile = tmpFile, method = "curl")
+# url<-"http://github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv"
+# url<-"http://raw.github.com/TheReallyBigApple/CunyAssignments/blob/main/R/CollegeDistance.csv"
+#  library(RCurl)
+# x <- getURL(url)
+#  CollegeDistance.df <- read.csv(text = x)
+
+```
+
+<br>
+
+
+1) Use the summary function to gain an overview of the data set. Then display the mean and median for at least two attributes.
+
+
+<br>
+
+```{r problem1}
+library(knitr)
+
+knitr::kable(summary(CollegeDistance.df, caption='Summary of all Students'))          # score mean = 50.89
+
+
+score_mean<-round(mean(CollegeDistance.df$score),2) 
+score_median<-round(median(CollegeDistance.df$score),2)
+
+distance_mean<-round(mean(CollegeDistance.df$distance),2)
+distance_median<-round(median(CollegeDistance.df$distance),2)
+
+matrix1<-matrix(c(score_mean, score_median, distance_mean, distance_median), ncol=2, byrow=TRUE)
+
+
+rownames(matrix1)=c("Score","Distance")
+colnames(matrix1)=c("Mean","Median")
+
+# kable(matrix1,"html")
+knitr::kable(matrix1, caption='College Scores and Distances')
+
+```
+
+<br>
+
+2) Create a new data frame with a subset of the columns and rows. Make sure to rename it.
+</pre>
+<br>
+
+
+```{r problem2}
+# select the gender, ethnicity, score and distance  just the records where the school is in an urban area and both parents went to college
+UrbanCollegeEducatedDistance.df <- subset(CollegeDistance.df[c("X","gender", "ethnicity", "score","distance","urban")], CollegeDistance.df$urban == "yes" & 
+                                    CollegeDistance.df$fcollege=="yes" & CollegeDistance.df$mcollege=="yes")
+
+```
+<br>
+
+3) Create new column names for the new data frame.
+
+<br>
+```{r problem3}
+
+
+# rename the columns to improve their clarity. Note dplyr rename() is neater but, base R is used here
+
+names(UrbanCollegeEducatedDistance.df)[names(UrbanCollegeEducatedDistance.df) == "X"] <- "u_sort"
+
+names(UrbanCollegeEducatedDistance.df)[names(UrbanCollegeEducatedDistance.df) == "score"] <- "u_avg_score_as_HS_Senior"
+
+names(UrbanCollegeEducatedDistance.df)[names(UrbanCollegeEducatedDistance.df) == "gender"] <- "u_gender"
+
+names(UrbanCollegeEducatedDistance.df)[names(UrbanCollegeEducatedDistance.df) == "ethnicity"] <- "u_ethnicity"
+
+names(UrbanCollegeEducatedDistance.df)[names(UrbanCollegeEducatedDistance.df) == "distance"] <- "u_distance"
+
+
+```
+<br> 
+
+4) Use the summary function to create an overview of your new data frame. The print the mean and median for the same two attributes. Please compare.
+
+<br>
+```{r problem4}
+
+summary(UrbanCollegeEducatedDistance.df)
+
+
+score_mean<-round(mean(UrbanCollegeEducatedDistance.df$u_avg_score_as_HS_Senior),2) 
+score_median<-round(median(UrbanCollegeEducatedDistance.df$u_avg_score_as_HS_Senior),2)
+
+distance_mean<-round(mean(UrbanCollegeEducatedDistance.df$u_distance),2)
+distance_median<-round(median(UrbanCollegeEducatedDistance.df$u_distance),2)
+
+matrix1<-matrix(c(score_mean, score_median, distance_mean, distance_median), ncol=2, byrow=TRUE)
+
+rownames(matrix1)=c("Score","Distance")
+colnames(matrix1)=c("Mean","Median")
+
+
+knitr::kable(matrix1, caption='College Scores and Distances')
+
+```
+<br>
+
+5) For at least 3 values in a column please rename so that every value in that column is updated.
+
+<br>
+```{r problem5}
+
+
+# update the sort to 0, so the outliers have u_sort=0
+
+q1 <- quantile(UrbanCollegeEducatedDistance.df$u_distance, .10 )
+q3 <- quantile(UrbanCollegeEducatedDistance.df$u_distance, .90 )
+
+sprintf("Isolating students who commuted less than %.2f or greater than %.2f", q1, q3)
+
+
+
+
+
+UrbanCollegeEducatedDistance.df <- within(UrbanCollegeEducatedDistance.df, {
+  f <- u_distance < q1 | u_distance > q3
+  u_sort[f] <- 0
+}) 
+
+
+
+
+
+# update other to unknown
+
+UrbanCollegeEducatedDistance.df <- within(UrbanCollegeEducatedDistance.df, {
+  f <- u_ethnicity == "other"
+  u_ethnicity[f] <- "unknown"
+}) 
+```
+<br>
+
+6) Display enough rows to see examples of all of steps 1-5 above.
+
+<br>
+```{r problem6}
+# spot check 10 rows in which the sort=0 , these are the outliers
+u_outliers<- head(subset(UrbanCollegeEducatedDistance.df,UrbanCollegeEducatedDistance.df$u_sort==0),10)
+
+
+
+knitr::kable(u_outliers, caption='College Distance Outliers - Urban Location/Educated Family.')
+
+# spot check 10 rows in which the sort!=0 , these in the first 2 standard deviations ( more or less )
+u_norms<-head(subset(UrbanCollegeEducatedDistance.df,UrbanCollegeEducatedDistance.df$u_sort!=0),10)
+knitr::kable(u_norms, caption='College Distance Norms - Urban Location/Educated Family.')
+```
+
