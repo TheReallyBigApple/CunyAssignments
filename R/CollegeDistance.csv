@@ -1,4 +1,4 @@
-,gender,ethnicity,score,fcollege,mcollege,home,urban,unemp,wage,distance,tuition,education,income,region
+X,gender,ethnicity,score,fcollege,mcollege,home,urban,unemp,wage,distance,tuition,education,income,region
 1,male,other,39.15000153,yes,no,yes,yes,6.199999809,8.090000153,0.200000003,0.889150023,12,high,other
 2,female,other,48.86999893,no,no,yes,yes,6.199999809,8.090000153,0.200000003,0.889150023,12,low,other
 3,male,other,48.74000168,no,no,yes,yes,6.199999809,8.090000153,0.200000003,0.889150023,12,low,other
