@@ -1,0 +1,163 @@
+
+
+
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+id			integer,
+name		varchar(40),
+group_id	integer null             -- a user may be unassigned, but can only belong to one group
+);
+
+create unique INDEX users_i0 on users(id);
+
+insert users values(1,"Modesto",1);
+insert users values(2,"Ayine",1);
+insert users values(3,"Christoper",2);
+insert users values(4,"Cheong woo",2);
+insert users values(5,"Saulat",3);
+insert users values(6,"Heidy",null);       -- not yet assigned
+
+
+
+DROP TABLE IF EXISTS user_groups;
+
+CREATE TABLE user_groups (
+id		integer,
+name		varchar(40)
+);
+
+create unique INDEX user_groups_i0 on user_groups(id);
+
+insert user_groups values(1,"I.T.");
+insert user_groups values(2,"Sales");
+insert user_groups values(3,"Administration");
+insert user_groups values(4,"Operations");
+
+
+
+DROP TABLE IF EXISTS rooms;
+
+CREATE TABLE rooms (
+id		integer,
+name		varchar(40)
+);
+
+create unique INDEX rooms_i0 on rooms(id);
+
+insert rooms values(1,"101");
+insert rooms values(2,"102");
+insert rooms values(3,"Auditorium A");
+insert rooms values(4,"Auditorium B	");
+
+
+
+DROP TABLE IF EXISTS key_card_access;
+
+
+CREATE TABLE key_card_access (
+user_group_id		integer,
+room_id			integer
+);
+
+create unique INDEX key_card_access_i0 on key_card_access(user_group_id,room_id);
+
+
+
+insert key_card_access values(1,1);
+insert key_card_access values(1,2);
+insert key_card_access values(2,2);
+insert key_card_access values(2,3);
+
+
+
+
+
+
+1) All groups, and the users in each group. A group should appear even if there are no users assigned to the group
+
+
+
+select 
+	user_groups.name as UserGroup, 
+    users.name as UserName
+from 
+	user_groups 
+	left join users on user_groups.id=users.group_id
+order by 
+	user_groups.name; 
+
+
+Output :
+
+UserGroup	UserName
+Administration	Saulat
+I.T.		Modesto
+I.T.		Ayine
+Operations	
+Sales		Christoper
+Sales		Cheong woo
+
+
+
+
+2) All rooms, and the groups assigned to each room. The rooms should appear even if no groups have been assigned to them.
+
+
+select 
+	rooms.name as Room, user_groups.name as UserGroup
+from 
+	rooms 
+	left join key_card_access on rooms.id=key_card_access.room_id
+	left join user_groups on key_card_access.user_group_id=user_groups.id;
+    
+    
+
+Output:
+
+Room		UserGroup
+101		I.T.
+102		I.T.
+102		Sales
+Auditorium A	Sales
+Auditorium B		
+
+
+
+
+
+
+3) A list of users, the groups that they belong to, and the rooms to which they are assigned. This should be sorted alphabetically by user, then by group, then by room.
+       
+
+      
+select 
+	users.name as UserName, user_groups.name as GroupName, rooms.name as Room
+from 
+	users 
+		left join user_groups on users.group_id=user_groups.id
+		left join key_card_access on user_groups.id=key_card_access.user_group_id
+        left join rooms on key_card_access.room_id=rooms.id
+order by 
+	users.name, user_groups.name, rooms.name;
+
+
+
+
+Output:
+
+# UserName	GroupName	Room
+Ayine		I.T.		101
+Ayine		I.T.		102
+Cheong woo	Sales		102
+Cheong woo	Sales		Auditorium A
+Christoper	Sales		102
+Christoper	Sales		Auditorium A
+Heidy		
+Modesto		I.T.		101
+Modesto		I.T.		102
+Saulat		Administration	
+
+
+
+
