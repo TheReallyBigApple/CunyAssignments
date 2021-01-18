@@ -1,0 +1,235 @@
+---
+title: "CUNY MSDS R Bridge Course Final Project"
+author: "Tom Buonora"
+date: "January 9, 2021"
+output: html_document
+---
+
+
+<style type="text/css">
+body {
+font-size: 18px;
+color: black;
+}
+h1 {
+  font-size: 32px;
+  color: maroon;
+}
+</style>
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+<br><br>
+<hr>
+<br><br>
+
+<h1><center>Has quality within move genres changed since 1930 ? </center></h1>
+<br><br>
+<hr>
+<br><br>
+  
+The Internet Movie Database provides an opportunity to review how the internet generation views movies
+throughout the last century. We can explore the trends in genres, popularity (votes) and acclaim (ratings).
+<br><br>
+This project will explore 3 genres
+<ol>
+      <li>Comedy</li>
+      <li>Drama</li>
+      <li>Romance</li>
+</ol>
+
+
+
+<br><br>
+<hr>
+<br><br>
+
+
+
+
+Let start by producing queries and graphs that help us to understand the data set
+<ol>
+  <li> Questions of the <i>Total Data</i>:
+    <ul>
+      <li>What does the overall data look like ?</li>
+      <li>What do the individual movies look like  ?</li>
+      <li>What is the integrity of our data  ?</li>
+    </ul>
+</ol>
+
+
+<br>
+
+
+<br><br><br>
+
+
+Read data into movies.df  and rename column "length"  to "minutes" since length is an R function
+```{r read data}
+
+
+# i keep getting network errors
+#      Error in function (type, msg, asError = TRUE) : error:1407742E:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert protocol version
+# library(httr)
+# library(RCurl)
+# url<-"https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/R/movies.csv"
+# x<-getURL(url)
+# movies.df  <- read.csv(text=x, header=T)
+
+
+movies.df  <- read.csv("C:\\Users\\arono\\CUNY\\R\\movies.csv")
+
+# the "length" column will be confusing so rename it to "minutes"
+names(movies.df)[names(movies.df) == 'length'] <- 'minutes'
+
+
+```
+<br><br>
+Create summaries by year by taking the average votes, rating, minutes
+<br><br>
+
+```{r}
+
+# Create a table of yearly trends. Take the average of votes, rating and length
+yearly_trends.df <- aggregate(list(movies.df$votes, movies.df$rating,movies.df$minutes),         
+          by = list(movies.df$year),              # group by
+          FUN = mean
+           )                           
+
+colnames(yearly_trends.df)<-c('y_year','y_votes','y_rating','y_minutes' )
+
+```
+
+<br><br>
+Now show a plot of the average rating by year
+<br><br>
+
+```{r}
+
+par(bg="lightgray")
+
+yt_plot=cbind(yearly_trends.df$y_year,yearly_trends.df$y_rating)
+plot(yt_plot, type="n", ann=FALSE)
+usr <- par("usr")
+rect(usr[1], usr[3], usr[2], usr[4], col="cornsilk", border="black")
+lines(yt_plot, col="blue")
+title(main= "Ratings By Year", font.main=8, col.main="red", xlab="Year", ylab="Avg Rating", col.lab="red",cex.lab=1.25)
+
+
+```
+
+<br><br>
+Now show a plot of the average rating by votes
+<br><br>
+
+```{r}
+
+par(bg="lightgray")
+
+yt_plot=cbind(yearly_trends.df$y_year,yearly_trends.df$y_votes)
+plot(yt_plot, type="n", ann=FALSE)
+
+usr <- par("usr")
+rect(usr[1], usr[3], usr[2], usr[4], col="cornsilk", border="black")
+lines(yt_plot, col="blue")
+title(main= "Votes By Year", font.main=8, col.main="red", xlab="Year", ylab="Avg Votes", col.lab="red",cex.lab=1.25)
+
+```
+
+<br><br>
+Lets take a closer look at our data. Lets look at comedies prior to the year 1900
+<br><br>
+
+```{r}
+
+old_comedies <- subset(movies.df, year < 1900 &  Comedy==1,   select=c(year, title, rating,votes, minutes))
+knitr::kable(old_comedies, caption='Old Comedies')
+
+```
+
+<br><br><br><br>
+<b><center><u>Data Integrity</u></center></b>
+<br><br>
+After reviewing the data, I get the sense there some noise in the data.
+<br>
+The year 2005 looks incomplete.
+<br><br>
+
+```{r}
+
+votes_per_year <- subset(yearly_trends.df, y_year > 2000 ,   select=c(y_year, y_votes))
+knitr::kable(votes_per_year, caption='Recent Votes Per Year')
+
+```
+
+<br><br>
+And the early movies look like they are shorts.
+<br><br>
+
+```{r}
+# I also noticed a huge # of shorts especially at the beginning
+votes_per_year <- subset(yearly_trends.df, y_year < 1900 ,   select=c(y_year, y_minutes))
+knitr::kable(votes_per_year, caption='Minutes Per Year')
+
+```
+<br><br><br>
+To answer the original question about the quality of genres over time,
+lets restrict our data set to popular, full length movies during a time frame when the movie industry was mature
+
+<ol>
+      <li>more than 100 votes</li>
+      <li>more than 50 minutes</li>
+      <li>from years 1930-2004</li>
+</ol>
+<br><br><br>
+
+```{r}
+relevant_movies.df <- subset(movies.df, year >= 1930 &  year<=2004 & votes>100 & minutes>50,   
+                            select=c(year, title, minutes, budget, rating,votes, Comedy, Drama, Romance))
+
+relevant_comedies.df <- subset(relevant_movies.df , Comedy==1,   select=c(year, rating))
+relevant_dramas.df <- subset(relevant_movies.df , Drama==1,   select=c(year, rating))
+relevant_romances.df <- subset(relevant_movies.df , Romance==1,   select=c(year, rating))
+
+yearly_rc.df <- aggregate(list(relevant_comedies.df$rating), by = list(relevant_comedies.df$year),   FUN = mean)
+yearly_rd.df <- aggregate(list(relevant_dramas.df$rating), by = list(relevant_dramas.df$year),   FUN = mean)
+yearly_rr.df <- aggregate(list(relevant_romances.df$rating), by = list(relevant_romances.df$year),   FUN = mean)
+```
+
+<br><br>
+Now create a 3 lined graph
+<br><br>
+
+```{r}
+par(bg="lightgray")
+
+plot_colors <- c("blue", "red", "green")
+
+plot(yearly_rc.df, type="n", ann=FALSE)
+usr <- par("usr")
+rect(usr[1], usr[3], usr[2], usr[4], col="cornsilk", border="black")
+
+
+lines(yearly_rc.df, lty=1, col="blue")
+lines(yearly_rd.df, lty=2, col="red")
+lines(yearly_rr.df, lty=3, col="green")
+
+legend("topright", c("Comedy", "Drama", "Romance"), cex=0.8, col=plot_colors, lty=1:3, lwd=2, bty="n");
+
+title(main= "Ratings By Year and Category", font.main=8, col.main="red", xlab="Year", ylab="Avg Rating", col.lab="red",cex.lab=1.25)
+
+```
+<br><br>
+Looking at this figure, I have 2 observations. 
+<br><br>
+One is that comedies of the 1930s are very highly rated and comedies had the steepest decline in acclaim.
+<br><br>
+The other observation is that the earlier you go back, the higher the rating, which I suspect has something to do with the critics sentimentality
+towards older movies.
+<br><br>
+
