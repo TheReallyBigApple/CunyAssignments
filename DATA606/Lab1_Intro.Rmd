@@ -1,0 +1,314 @@
+---
+title: "Introduction to R and RStudio"
+author: "Tom Buonora"
+output: pdf_document
+#output:
+#  pdf_document: default
+#  html_document:
+#    includes:
+#      in_header: header.html
+#    css: ./lab.css
+#    highlight: pygments
+#    theme: cerulean
+#    toc: true
+#    toc_float: true
+#editor_options: 
+#  chunk_output_type: console
+---
+
+```{r global_options, include=FALSE}
+# knitr::opts_chunk$set(eval = TRUE, results = FALSE, fig.show = "hide", message = FALSE, warning = FALSE)
+library(tidyverse)
+library(openintro)
+```
+
+
+## Dr. Arbuthnot's Baptism Records
+
+To get started, let's take a peek at the data.
+
+```{r load-abrbuthnot-data, eval=TRUE}
+source('C:/Users/arono/Documents/R/win-library/4.0/DATA606/labs/Lab1/more/arbuthnot.r')
+```
+
+```{r view-data}
+arbuthnot
+```
+
+
+```{r glimpse-data}
+# apparently glimpse has been imported through 2 packages, tibble and dplyr
+glimpse(arbuthnot)
+```
+
+
+
+```{r glimpse-data-result}
+glimpse(arbuthnot)
+```
+
+
+## Some Exploration
+
+
+
+```{r view-boys}
+head(arbuthnot$boys)
+```
+
+
+1. What command would you use to extract just the counts of girls baptized? Try  it!
+    
+```{r extract-girls-only}
+head(arbuthnot$girls)
+
+```
+    
+
+
+### Data visualization
+
+R has some powerful functions for making graphics. We can create a simple plot of the number of girls baptized per year with the command
+
+```{r plot-girls-vs-year}
+ggplot(data = arbuthnot, aes(x = year, y = girls)) +  geom_point()
+
+```
+
+Replace `geom_point()` with `geom_line()`.
+
+```{r plot-girls-vs-year-line}
+ggplot(data = arbuthnot, aes(x = year, y = girls)) + 
+  geom_line()
+```
+
+
+1. Is there an apparent trend in the number of girls baptized over the years? 
+   How would you describe it? (To ensure that your lab report is comprehensive,
+   be sure to include the code needed to make the plot as well as your written
+   interpretation.)
+
+\textcolor{blue}{The overall trend shows an increase in the number of girls getting baptised each year. 
+But there were some dramatic drops as well around 1640 and 1720, and some dramatic increaeses around 1660 and 1722.}
+
+\textcolor{blue}{The below chunk calculates the delta of girls baptised each year and then prints out the top 5 years of increase and decrease.}
+
+```{r}
+
+arbuthnot <- arbuthnot %>%
+  mutate(delta_girls = 0)
+
+for (i in 2:nrow(arbuthnot))
+{
+  if (i==2)
+  {
+    prev_girls=arbuthnot[1,"girls"]
+  }
+  
+  
+  
+  current_girls = arbuthnot[i,"girls"]
+  delta_girls = current_girls-prev_girls
+  arbuthnot[i,"delta_girls"]<-delta_girls
+  
+  prev_girls=current_girls
+}
+
+arbuthnot[which.max(arbuthnot$delta_girls),]
+arbuthnot[which.min(arbuthnot$delta_girls),]
+
+arbuthnot_sorted<-arbuthnot %>% arrange(desc(delta_girls))
+print ("The greatest increaseses : ")
+head(arbuthnot_sorted)
+print("The greatest decreases")
+tail(arbuthnot_sorted)
+  
+```
+
+\textcolor{blue}{I was close. It was actually 1704 and 1705 which had the most dramatic deltas.}
+
+
+
+Display rows where girls are greater than boys
+
+```{r}
+nrow(subset(arbuthnot, girls > boys))
+```
+Now display rows where boys are greater than girls
+```{r}
+nrow(subset(arbuthnot, boys > girls))
+
+```
+
+\textcolor{blue}{I would like to verify if we should assume that this ratio in baptism records actually infers the same ratio in actual births.}
+
+### R as a big calculator
+ 
+If we add the vector for baptisms for boys to that of girls, R will compute all sums simultaneously.
+
+```{r calc-total-bapt-vars}
+arbuthnot$boys + arbuthnot$girls
+```
+
+
+### Adding a new variable to the data frame
+
+We'll be using this new vector to generate some plots, so we'll want to save it as a permanent column in our data frame.
+
+```{r calc-total-bapt-vars-save}
+arbuthnot <- arbuthnot %>%
+  mutate(total = boys + girls)
+```
+
+
+```{r plot-total-vs-year}
+ggplot(data = arbuthnot, aes(x = year, y = total)) + 
+  geom_line()
+```
+
+Create a boy to girl ratio
+
+```{r calc-prop-boys-to-girls-vars}
+arbuthnot <- arbuthnot %>%
+  mutate(boy_to_girl_ratio = boys / girls)
+```
+
+
+Create a boy to total ratio
+
+```{r calc-prop-boys-vars}
+arbuthnot <- arbuthnot %>%
+  mutate(boy_ratio = boys / total)
+```
+
+*Note*
+**mutate()** *adds new variables and preserves existing ones.*
+**transmute()** *adds new variables and drops existing ones.*
+
+
+3. Now, generate a plot of the proportion of boys born over time. What do you see? 
+
+
+```{r plot-boys-total-ratio}
+ggplot(data = arbuthnot, aes(x = year, y = boy_ratio)) + 
+  geom_line()
+```
+
+\textcolor{blue}{My comment is that the graph seems choppy, but only because the scale is so narrow. I would characterize the male to female birth ratio as consistent within the 51 to 53 percent range.}
+
+
+
+```{r boys-more-than-girls}
+arbuthnot <- arbuthnot %>%
+  mutate(more_boys = boys > girls)
+```
+
+
+
+## More Practice
+
+
+```{r summarize min and max}
+arbuthnot %>%
+  summarize(min = min(boys), max = max(boys))
+```
+
+1.  What years are included in this data set? What are the dimensions of the 
+    data frame? What are the variable (column) names?
+    
+    
+\textcolor{blue}{Since there are 82 rows, I will just print the minimum/maximum of year}
+
+```{r dim-present}
+
+# arbuthnot["year"]
+
+
+present <- present %>%  mutate(total = boys + girls)
+present <- present %>%  mutate(boy_to_girl_ratio = boys / girls)
+present <- present %>% mutate(more_boys = boys > girls)
+
+
+sprintf("This study spanned the years from %s to  %s ", min(present["year"]),max(present["year"])) 
+
+d_df <- dim(present)
+sprintf("The dimensions of the table are %d rows and %d columns ", d_df[1],d_df[2])
+
+cnames<-as.data.frame(names(present))
+knitr::kable(cnames, caption='Column Names',col.names = "")
+
+```
+    
+    
+    
+    
+
+1.  How do these counts compare to Arbuthnot's? Are they of a similar magnitude?
+
+
+\textcolor{blue}{The counts are signficantly higher. The actual numbers will be shown in a little bit when I calculate the mean totals}
+
+
+
+```{r count-compare}
+
+
+present_range<- max(present["year"]) - min(present["year"])
+
+arbuthnot_range<- max(arbuthnot["year"]) - min(arbuthnot["year"])
+
+sprintf("The arbuthnot years were %s to  %s or %d total years", 
+        min(arbuthnot["year"]),max(arbuthnot["year"]), arbuthnot_range) 
+
+sprintf("Meanwhile the present study covered %d years",present_range)
+
+present_avg_total<-format(mean(present$total),big.mark = ",")
+
+arbuthnot_avg_total<-format(mean(arbuthnot$total),big.mark = ",")
+
+sprintf("The average total count was %s for arbuthnot and  %s for present ", 
+          arbuthnot_avg_total, present_avg_total) 
+
+
+
+sprintf("The average ration was %.4f for arbuthnot and  %.4f for present ", 
+          mean(arbuthnot$boy_to_girl_ratio),  mean(present$boy_to_girl_ratio)) 
+
+
+
+
+```
+
+
+
+1.  Make a plot that displays the proportion of boys born over time. What do you see? 
+    Does Arbuthnot's observation about boys being born in greater proportion than girls 
+    hold up in the U.S.? 
+    
+    
+
+```{r plot-prop-boys-present}
+
+ggplot(data = present, aes(x = year, y = boy_to_girl_ratio)) +  geom_line()
+
+
+
+```
+    
+    
+\textcolor{blue}{I see the same ratio which, to me, is strong evidence that the ratio is natural to our species.}
+
+    
+1.  In what year did we see the most total number of births in the U.S.? 
+
+
+```{r find-max-total}
+# present_totals<-present %>% arrange(desc(total))
+
+present[which.max(present$total),]
+
+
+```
+
+    
+* * *
