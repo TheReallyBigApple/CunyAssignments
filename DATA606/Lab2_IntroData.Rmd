@@ -1,0 +1,415 @@
+---
+title: "Introduction to data"
+author: "Tom Buonora"
+output:
+  pdf_document: default
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r global-options, echo=FALSE, include=FALSE, comment=NA}
+knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(openintro)
+
+
+```
+
+nycflights contains flights that departed from the three major New York City airports in 2013.
+
+
+### Creating a reproducible lab report
+
+
+The web site for the Bureau of Transportation Statistics has moved !
+It is now [here](https://www.bts.gov/rita/) 
+
+Load data
+
+```{r load-data}
+data(nycflights)
+# View(nycflights)
+```
+
+View column names
+
+```{r names, comment=NA}
+
+
+for ( i in names(nycflights))
+{
+  cat("\t",i,"\n")
+}
+
+
+
+```
+\clearpage
+
+
+## Analysis
+
+### Lab report
+
+
+### Departure delays
+
+Plot departure delays of all flights with a histogram. The bin width will default to 30
+
+```{r hist-dep-delay, fig.width = 5}
+ggplot(data = nycflights, aes(x = dep_delay)) +
+  geom_histogram()
+```
+
+ 
+Plot again with binwidth of 15
+
+```{r hist-dep-delay-bins, fig.width = 5}
+ggplot(data = nycflights, aes(x = dep_delay)) +
+  geom_histogram(binwidth = 15)
+
+```
+
+Again with 150
+
+```{r hist-dep-delay-bins2, fig.width = 5}
+ggplot(data = nycflights, aes(x = dep_delay)) +
+  geom_histogram(binwidth = 150)
+```
+
+
+
+1.  Look carefully at these three histograms. How do they compare? Are features
+revealed in one that are obscured in another?
+
+\textcolor{blue}{The binwidth of 150 will do a poor job of delineating between on time vs a 30 minute delay.}
+
+\textcolor{blue}{The binwidth of 15 does a pretty good job of displaying that about 10\% of all flights have a small delay.}
+
+\textcolor{blue}{And 10\% of all flights depart a bit early.}
+
+Plot the flights with LAX as a destination :
+
+```{r lax-flights-hist,fig.width = 5}
+lax_flights <- nycflights %>%
+  filter(dest == "LAX")
+ggplot(data = lax_flights, aes(x = dep_delay)) +
+  geom_histogram()
+```
+
+
+Display the mean and median of the LAX flights.
+
+```{r lax-flights-summ}
+  # comment=NA just removes the hash tags
+  # noquote() will remove the quotes
+  # not sure what removes the [1]
+  # knitr::kables removes everything
+  # cat prints value only
+
+lax_stats<-lax_flights %>%
+  summarise(mean_dd   = mean(dep_delay), 
+            median_dd = median(dep_delay), 
+            n         = n())         # same as nrow()
+
+# lax_stats is a tibble, which is a data type that doesnt work on a lot of usual methods
+
+cat(sprintf("Mean=%.2f", lax_stats[1,"mean_dd"][1,1]))
+cat(sprintf("Median=%.2f", lax_stats[1,"median_dd"][1,1]))
+cat(sprintf("No. Flights=%s", lax_stats[1,"n"][1,1]))
+
+
+```
+
+
+
+<div id="boxedtext">
+**Summary statistics: ** Some useful function calls for summary statistics for a 
+single numerical variable are as follows:
+
+- `mean`
+- `median`
+- `sd`
+- `var`
+- `IQR`
+- `min`
+- `max`
+
+Note that each of these functions takes a single vector as an argument and 
+returns a single value. 
+</div>
+
+Select flights headed to San Francisco in February
+
+```{r sfo-feb-flights}
+sfo_feb_flights <- nycflights %>%
+  filter(dest == "SFO", month == 2)
+```
+
+How many flights meet the criteria? 
+
+```{r}
+knitr::kable(nrow(sfo_feb_flights), col.names = "")
+```
+
+
+
+    
+1.  Describe the distribution of the **arrival** delays of these flights using a 
+    histogram and appropriate summary statistics. **Hint:** The summary 
+    statistics you use should depend on the shape of the distribution.
+    
+\textcolor{blue}{I decided to try to compare LAX vs SFO side by side. For me, this evolved into learning something useful.}  
+    
+```{r summary-custom-list-origin}
+
+# summarize by destination
+
+# 1) Group the stats by destination
+
+arr_delays_by_dest<-nycflights %>%
+  group_by(dest) %>%
+  summarise(median_dd = median(arr_delay), earliest=min(arr_delay), 
+            sd=sd(arr_delay), latest=max(arr_delay),  n_flights = n())
+
+
+# 2) Create 2 labels that we will post the standard deviation of arrival delays for each city 
+
+dest1<-subset(arr_delays_by_dest,dest=='SFO')
+dest2<-subset(arr_delays_by_dest,dest=='LAX')
+
+
+# create labels for the standard deviation of JFK and SFO
+lg1=sprintf("SFO Sigma=%s",round(dest1$sd,2))
+lg2=sprintf("LAX Sigma=%s",round(dest2$sd,2))
+
+
+sfo_flights <- nycflights %>% filter(dest == "SFO")
+
+
+# freq is TRUE for counts, FALSE for distribution
+hg1<-hist(lax_flights$arr_delay, plot=FALSE, breaks=100)
+# hg2<-hist(sfo2$arr_delay, plot=FALSE,  breaks=100)
+
+# 3) Create a color thats nearly transparent
+transparent_blue<-rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
+transparent_pink <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
+
+# plot the SF delays
+hist(sfo_flights$arr_delay,   main="Arrival Delays into SF vs LA",
+ xlab="Delays (minutes)",   
+col=transparent_blue,
+freq=FALSE,  breaks=100)
+
+# Now add LA
+plot(hg1, col = transparent_pink, add = TRUE, freq=FALSE, breaks=100)
+
+
+legend("topright", c("SFO", "LAX"), cex=0.8, col=c(transparent_blue,transparent_pink ), 
+       text.col = c("blue","pink"), text.width = 14, text.font=2, lty=1, lwd=5, bty="n");
+
+legend("right", c(lg1, lg2), cex=0.8, col=c(transparent_blue,transparent_pink ), 
+       text.col = c("blue","pink"), text.font=2, lty=1, lwd=5, bty="n");
+
+```
+
+
+1.  Calculate the median and interquartile range for `arr_delay`s of flights in
+    in the `sfo_feb_flights` data frame, grouped by carrier. Which carrier
+    has the most variable arrival delays?
+    
+\textcolor{blue}{The IQR is the middle 50\% so measures the range of the middle. It wont be effected by the outliers.}
+      
+\textcolor{blue}{The Standard Deviation on the other hand measures how far all values are from the mean and its weighted more by larger differences.}
+      
+```{r}
+
+arr_delays_by_carrier<-sfo_feb_flights %>%
+  group_by(carrier) %>%
+  summarise(median_dd = median(arr_delay), iqr= IQR(arr_delay), sd=sd(arr_delay),  n_flights = n())
+
+highest_sd<-arr_delays_by_carrier[which.max(arr_delays_by_carrier$sd),]
+
+highest_iqr<-arr_delays_by_carrier[which.max(arr_delays_by_carrier$iqr),]
+
+sprintf("The carrier with the highest standard deviation is %s",highest_sd$carrier)
+sprintf("The carrier with the highest IQR is %s",highest_iqr$carrier)
+
+```
+    
+    
+    
+### Departure delays by month
+
+Which month would you expect to have the highest average delay departing from an
+NYC airport?
+
+Let's think about how you could answer this question:
+
+- First, calculate monthly averages for departure delays. With the new language
+you are learning, you could
+    + `group_by` months, then
+    + `summarise` mean departure delays.
+- Then, you could to `arrange` these average delays in `desc`ending order
+
+```{r mean-dep-delay-months}
+dep_delays_by_month<-nycflights %>%
+  group_by(month) %>%
+  summarise(mean_dd = mean(dep_delay)) %>%
+  arrange(desc(mean_dd))
+
+sprintf("The month with the greatest (mean) delays is %s", 
+        dep_delays_by_month[which.max(dep_delays_by_month$mean_dd),"month"])
+
+```
+
+\textcolor{blue}{I was thinking the New Yorks winter would lead to greater delays. Now I think the increase in flights during the summer lead to delays.}
+
+1.  Suppose you really dislike departure delays and you want to schedule 
+    your travel in a month that minimizes your potential departure delay leaving 
+    NYC. One option is to choose the month with the lowest mean departure delay.
+    Another option is to choose the month with the lowest median departure delay. 
+    What are the pros and cons of these two choices?
+
+<!--
+Which month has the highest average departure delay from an NYC airport? What
+    about the highest median departure delay? Which of these measures is more 
+    reliable for deciding which month(s) to avoid flying if you really dislike 
+    delayed flights.
+-->
+
+\textcolor{blue}{The mean is influenced by outliers, for example if 1 flight was delayed by 30 hours, the median wont be effected}
+\textcolor{blue}{Honestly, I might try to isolate the median by month and orgin}
+```{r}
+dep_delays_by_month_and_origin<-nycflights %>%
+  group_by(month, origin) %>%
+  summarise(median_dd = median(dep_delay)) 
+
+dep_delays_by_month_and_origin[which.max(dep_delays_by_month_and_origin$median_dd),]
+
+least_delays<-subset(nycflights,origin=='EWR' & month==2)
+
+```
+
+\textcolor{blue}{Then just to get a visual sense I lay out the delays in a stacked dot plot.}
+```{r}
+
+ggplot(least_delays, aes(x = dep_delay)) + geom_dotplot(binwidth = 1.5) + theme_bw()
+
+```
+
+
+
+
+### On time departure rate for NYC airports
+
+Create a new categorical field to describe each flight as either "on time" or "delayed"
+
+```{r dep-type}
+nycflights <- nycflights %>%
+  mutate(dep_type = ifelse(dep_delay < 5, "on time", "delayed"))
+```
+
+Create an on_time ratio for each origin. The "ot_dep_rate" is the number of "on time" flights divided by the total flights
+
+```{r ot-dep-rate}
+nycflights %>%
+  group_by(origin) %>%
+  summarise(ot_dep_rate = sum(dep_type == "on time") / n()) %>%
+  arrange(desc(ot_dep_rate))
+```
+
+1.  If you were selecting an airport simply based on on time departure 
+    percentage, which NYC airport would you choose to fly out of?
+
+You can also visualize the distribution of on on time departure rate across 
+the three airports using a \underline{segmented bar plot}.
+
+
+```{r viz-origin-dep-type}
+ggplot(data = nycflights, aes(x = origin, fill = dep_type)) +
+  geom_bar()
+```
+
+* * *
+
+\clearpage
+
+## More Practice
+
+1.  Mutate the data frame so that it includes a new variable that contains the 
+    average speed, `avg_speed` traveled by the plane for each flight (in mph).
+    **Hint:** Average speed can be calculated as distance divided by
+    number of hours of travel, and note that `air_time` is given in minutes.
+```{r}
+nycflights <- nycflights %>%
+  mutate(avg_speed =  nycflights$distance/(nycflights$air_time/60))
+
+```
+    
+    
+    
+    
+1.  Make a scatterplot of `avg_speed` vs. `distance`. Describe the relationship
+    between average speed and distance.
+    **Hint:** Use `geom_point()`.
+    
+```{r}
+ggplot(data = nycflights, aes(x = distance , y = avg_speed)) +  geom_point()
+
+
+```
+    
+\textcolor{blue}{I see a general increase in average speed as distance increases.}
+\textcolor{blue}{I also notice the absence of destinations between 2800 and 4500 miles}
+```{r}
+subset(nycflights, distance > 2800 & distance < 4500)[c("dest","distance")]
+
+```
+
+\textcolor{blue}{I also notice some suspect data}
+```{r}
+subset(nycflights, avg_speed > 600)[c("air_time","distance","avg_speed")]
+```
+
+
+
+
+1.  Replicate the following plot. **Hint:** The data frame plotted only
+    contains flights from American Airlines, Delta Airlines, and United
+    Airlines, and the points are `color`ed by `carrier`. Once you replicate
+    the plot, determine (roughly) what the cutoff point is for departure
+    delays where you can still expect to get to your destination on time.
+
+\textcolor{blue}{I dont care about flights that departed on time so Ill filter them out.}
+\textcolor{blue}{Then Ill plot the remaining by arriving on time or delayed.}
+\textcolor{blue}{Also to make it easier to read, Ill filter out the siginficant departure delays.}
+
+```{r plot-to-replicate, fig.width=7, fig.height=4}
+
+delayed<-5
+too_delayed_to_care<-60
+
+tardy_flights<-subset(nycflights,dep_delay > delayed)
+
+# create a category to display them by color
+tardy_flights <- tardy_flights %>%
+mutate(arr_type = ifelse(arr_delay < delayed, "on time", "delayed"))
+
+tardy <- tardy_flights  %>%
+  filter(dep_delay < too_delayed_to_care)
+ggplot(data = tardy, aes(x = dep_delay, y = arr_delay, color = arr_type)) +
+  geom_point()
+
+
+```
+
+\textcolor{blue}{It looks to me even with a small departure delay, you would still expect to arrive a little bit late}
