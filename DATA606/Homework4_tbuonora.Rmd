@@ -1,0 +1,479 @@
+---
+title: "Chapter 4 - Distributions of Random Variables"
+author: ""
+output:
+    pdf_document:
+        extra_dependencies: ["geometry", "multicol", "multirow"]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Area under the curve, Part I**. (4.1, p. 142) What percent of a standard normal distribution $N(\mu=0, \sigma=1)$ is found in each region? Be sure to draw a graph.
+
+(a) $Z < -1.35$
+
+*In these questions, we will use pnorm() to return the overall percentage in which the Z-score corresponds to.*
+*And we will use dnorm() to draw a graph of the section below or above the Z-score on the normalized curve.*
+```{r}
+
+# save off some parameters
+par( col = "blue", xaxp=c(-3,1,3),yaxp=c(0,1,4) )   
+x<-seq(-3, 3,0.1)
+
+z1<- -3
+z2<- -1.35
+z_title<-paste("p(Z) < ", format(pnorm(z2), digits=0, nsmall=2), 
+               " ( ", format(z2,digits=0,nsmall=2), ")")
+
+plot(x = x,  y = dnorm(x,0,1),type = "l")
+
+cord.1x<- c(z1,seq(z1,z2,0.01),z2) 
+cord.1y<- c(0,dnorm(seq(z1,z2,0.01)),0) 
+title(main=z_title, cex.main = 1.2, line=0.5, cex.lab=2)
+polygon(cord.1x,cord.1y,col='grey60')
+Axis(side=1,at=seq(-3, 3, by = 1))
+
+```
+
+(b) $Z > 1.48$
+
+
+```{r}
+
+
+
+z1<- 1.48
+z2<- 3
+z_title<-paste("p(Z) > ", format(pnorm(z1), digits=0, nsmall=2), 
+               " (", format(z1,digits=0,nsmall=2), ")")
+
+plot(x = x,  y = dnorm(x,0,1),type = "l")
+
+cord.1x<- c(z1,seq(z1,z2,0.01),z2) 
+cord.1y<- c(0,dnorm(seq(z1,z2,0.01)),0) 
+title(main=z_title, cex.main = 1.2, line=0.5, cex.lab=2)
+polygon(cord.1x,cord.1y,col='grey60')
+Axis(side=1,at=seq(-3, 3, by = 1))
+
+```
+
+
+(c) $-0.4 < Z < 1.5$
+```{r}
+
+
+z1<- -0.4
+z2<- 1.5
+z_title<-paste(format(pnorm(z1), digits=0, nsmall=2),
+         " (", format(z1,digits=0,nsmall=2), ") > p(Z) > ", 
+         format(pnorm(z2), digits=0, nsmall=2), " (", format(z2,digits=0,nsmall=2), ")")
+
+plot(x = x,  y = dnorm(x,0,1),type = "l")
+
+cord.1x<- c(z1,seq(z1,z2,0.01),z2) 
+cord.1y<- c(0,dnorm(seq(z1,z2,0.01)),0) 
+title(main=z_title, cex.main = 1.2, line=0.5, cex.lab=2)
+polygon(cord.1x,cord.1y,col='grey60')
+Axis(side=1,at=seq(-3, 3, by = 1))
+
+```
+
+
+(d) $|Z| > 2$
+
+```{r}
+
+
+z1<- -3
+z2<- -2
+z_title<-paste(" P(Z) < ", format(pnorm(z2), digits=0, nsmall=2)," (", z2, ")")
+         
+plot(x = x,  y = dnorm(x,0,1),type = "l")
+cord.1x<- c(z1,seq(z1,z2,0.01),z2) 
+cord.1y<- c(0,dnorm(seq(z1,z2,0.01)),0) 
+polygon(cord.1x,cord.1y,col='grey60')
+
+
+z1<- 2
+z2<- 3
+
+z_title<-paste(z_title, " and P(Z) > ", format(pnorm(z1), digits=0, nsmall=2)," (", z1, ")")
+
+cord.1x<- c(z1,seq(z1,z2,0.01),z2) 
+cord.1y<- c(0,dnorm(seq(z1,z2,0.01)),0) 
+polygon(cord.1x,cord.1y,col='grey60')
+title(main=z_title, cex.main = 1.2, line=0.5, cex.lab=2)
+Axis(side=1,at=seq(-3, 3, by = 1))
+```
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**Triathlon times, Part I** (4.4, p. 142) In triathlons, it is common for racers to be placed into age and gender groups. Friends Leo and Mary both completed the Hermosa Beach Triathlon, where Leo competed in the *Men, Ages 30 - 34* group while Mary competed in the *Women, Ages 25 - 29* group. Leo completed the race in 1:22:28 (4948 seconds), while Mary completed the race in 1:31:53 (5513 seconds). Obviously Leo finished faster, but they are curious about how they did within their respective groups. Can you help them? Here is some information on the performance of their groups:
+
+* The finishing times of the \textit{Men, Ages 30 - 34} group has a mean of 4313 seconds with a standard deviation of 583 seconds.
+* The finishing times of the \textit{Women, Ages 25 - 29} group has a mean of 5261 seconds with a standard deviation of 807 seconds.
+* The distributions of finishing times for both groups are approximately Normal.
+
+Remember: a better performance corresponds to a faster finish.
+
+(a) Write down the short-hand for these two normal distributions.
+
+Men, Ages 30 - 34 : $N(\mu=4313, \sigma=583)$
+Women, Ages 25 - 29 : $N(\mu=5261, \sigma=807)$
+
+(b) What are the Z-scores for Leo's and Mary's finishing times? What do these Z-scores tell you?
+
+
+
+
+```{r}
+time_leo<-4948
+time_mary<-5513
+time_mean_leo_group<-4313
+time_sd_leo_group<-583
+
+time_mean_mary_group<-5261
+time_sd_mary_group<-807
+
+z_score_leo<-(time_leo-time_mean_leo_group)/time_sd_leo_group
+z_score_mary<-(time_mary-time_mean_mary_group)/time_sd_mary_group
+
+paste("Leo Z-Score = ", round(z_score_leo,3))
+paste("Mary Z-Score = ", round(z_score_mary,3))
+
+
+
+```
+
+Z-Score = $(\bar{x} - \mu) / \sigma$
+
+*A higher Z-Score refelects a worse time.*
+*The Z-Score is the number of standard deviations above the mean.*
+
+
+
+
+
+(c) Did Leo or Mary rank better in their respective groups? Explain your reasoning.
+
+*Leos score would be considered worse. He performed worse than 85\% which can be deduced from pnorm(1.08).*
+
+```{r}
+z_cdf_pct_leo<-pnorm(z_score_leo)
+z_cdf_pct_mary<-pnorm(z_score_mary)
+
+
+sprintf("Leo did worse than = %.2f%s",  round(z_cdf_pct_leo,2),'%')
+
+sprintf("Mary did worse than = %.2f%s",  round(z_cdf_pct_mary,2),'%')
+
+```
+
+
+(d) What percent of the triathletes did Leo finish faster than in his group?
+```{r}
+sprintf("Leo did better than = %.2f%s",  round((1 - z_cdf_pct_leo) * 100,2),'%')
+```
+
+
+(e) What percent of the triathletes did Mary finish faster than in her group?
+```{r}
+sprintf("Mary did better than = %.2f%s",  round((1 - z_cdf_pct_mary)*100,2),'%')
+```
+
+
+(f) If the distributions of finishing times are not nearly normal, would your answers to parts (b) - (e) change? Explain your reasoning.
+
+*In a normal distribution, the Z-Score and the Percentage given are accurate responses to the question,
+what percentage did Leo or Mary do better or worse than?*
+
+*If the distribution were not normal than the standard deviation above and below the mean would not be the same, so
+in that case, a more analytical approach must be taken.*
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**Heights of female college students** Below are heights of 25 female college students.
+
+\[ \stackrel{1}{54}, \stackrel{2}{55}, \stackrel{3}{56}, \stackrel{4}{56}, 
+\stackrel{5}{57}, \stackrel{6}{58}, \stackrel{7}{58}, \stackrel{8}{59}, 
+\stackrel{9}{60}, \stackrel{10}{60}, \stackrel{11}{60}, \stackrel{12}{61}, 
+\stackrel{13}{61}, \stackrel{14}{62}, \stackrel{15}{62}, \stackrel{16}{63}, 
+\stackrel{17}{63}, \stackrel{18}{63}, \stackrel{19}{64}, \stackrel{20}{65}, 
+\stackrel{21}{65}, \stackrel{22}{67}, \stackrel{23}{67}, \stackrel{24}{69}, 
+\stackrel{25}{73} \]
+
+(a) The mean height is 61.52 inches with a standard deviation of 4.58 inches. Use this information to determine if the heights approximately follow the 68-95-99.7% Rule.
+```{r}
+
+heights <- c(54, 55, 56, 56, 57, 58, 58, 59, 60, 60, 60, 61, 
+            61, 62, 62, 63, 63, 63, 64, 65, 65, 67, 67, 69, 73)
+
+sd_heights<-sd(heights)
+sd_plus1<-mean(heights) + sd_heights
+sd_minus1<-mean(heights) - sd_heights
+
+sd_plus2<-sd_plus1 + sd_heights
+sd_minus2<-sd_minus1 - sd_heights
+
+sd_plus3<-sd_plus2 + sd_heights
+sd_minus3<-sd_minus2 - sd_heights
+
+sd_1_pct<-length(subset(heights, heights > sd_minus1 & heights < sd_plus1))/length(heights)
+sd_2_pct<-length(subset(heights, heights > sd_minus2 & heights < sd_plus2))/length(heights)
+sd_3_pct<-length(subset(heights, heights > sd_minus3 & heights < sd_plus3))/length(heights)
+
+
+
+sprintf("The percentage of heights that fall with in 1 standard deviations (%.2f andd %.1f) is %.2f%s", 
+          sd_plus1, sd_minus1, sd_1_pct * 100,'%' )
+
+
+sprintf("The percentage of heights that fall with in 2 standard deviations (%.2f andd %.1f) is %.2f%s", 
+          sd_plus2, sd_minus2, sd_2_pct * 100,'%' )
+
+
+
+sprintf("The percentage of heights that fall with in 3 standard deviations (%.2f andd %.1f) is %.2f%s", 
+          sd_plus3, sd_minus3, sd_3_pct * 100,'%' )
+
+
+
+hist(heights, main="Heights vs Normal Curve", probability = TRUE,   breaks=30, xlab="")
+
+# now create a totally seperate set of x,y values
+x_values<-seq(min(heights),max(heights),by =1)
+y_values<-dnorm(x = x_values, mean = mean(heights), sd = sd(heights))
+
+lines(x = x_values, y = y_values, col = "blue")                    # add the line
+
+```
+
+
+
+(b) Do these data appear to follow a normal distribution? Explain your reasoning using the graphs provided below.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.show="hold", out.width="50%", fig.height=3}
+library(openintro)
+heights <- c(54, 55, 56, 56, 57, 58, 58, 59, 60, 60, 60, 61, 
+            61, 62, 62, 63, 63, 63, 64, 65, 65, 67, 67, 69, 73)
+par(mar=c(3.7,2.2,1,1), las=1, mgp=c(2.5,0.7,0), mfrow = c(1,1), cex.lab = 1.5, cex.axis = 1.5)
+histPlot(heights, col = COL[1], xlab = "Heights", ylab = "", probability = TRUE, axes = FALSE, ylim = c(0,0.085))
+axis(1)
+x <- heights
+xfit <- seq(min(x)-5, max(x)+5, length = 400)         # xvalues from min-5 to max+5
+yfit <- dnorm(xfit, mean = mean(x), sd = sd(x))       # yvalues the normal frequency using 
+lines(xfit, yfit, col = COL[4], lwd = 2)
+par(mar=c(3.7,3.7,1,1), las=1, mgp=c(2.5,0.7,0), mfrow = c(1,1), cex.lab = 1.5, cex.axis = 1.5)
+qqnorm(heights, col = COL[1], pch = 19, main = "", axes = FALSE)
+axis(1)
+axis(2)
+qqline(heights, col = COL[1])
+```
+
+
+*The qqnorm and qqline function generate a comparison between the heights vector and a normalized curve.*
+*If the sample distribution were normally distributed the plot would be a centered diagonal line.*
+
+```{r}
+# Use the DATA606::qqnormsim function
+
+DATA606::qqnormsim(heights)
+
+```
+
+*The qqnormsim function generates 8 plots by calling rnorm() to generate 8 distributions.*
+*A data frame is populated and then ggplot is called with stat_qq() to generate the qqplot*
+*and facet_wrap to display the grids side by side.*
+
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**Defective rate.** (4.14, p. 148) A machine that produces a special type of transistor (a component of computers) has a 2% defective rate. The production is considered a random process where each transistor is independent of the others.
+
+(a) What is the probability that the 10th transistor produced is the first with a defect?
+
+
+```{r}
+noquote(sprintf("                   .98^9 * .02 = %.7f ",.98^9 * .02))
+```
+
+(b) What is the probability that the machine produces no defective transistors in a batch of 100?
+```{r}
+noquote(sprintf("                   .98^10 = %.7f ",.98^10))
+```
+
+
+(c) On average, how many transistors would you expect to be produced before the first with a defect? What is the standard deviation?
+
+
+*The Expected Value or Mean is* $\frac{1}{50}$  of the sample size so you would expect to have at least 1 defect by the 50th transistor.*
+\begin{center}
+$E(x) = \sum{n * P(x)}$
+\end{center}
+
+*The standard deviation of a binomial variable with probability of x is*
+\begin{center}
+$\mu = \sqrt{n * P(x) * (1 -P(x))}$
+\end{center}
+
+*Note : a Bernoulli variable is how we describe a sample size of 1.*
+
+```{r}
+sprintf("Given n = %d, standard deviation = %.2f", 1, sqrt(1 * .98 * .02))
+sprintf("Given n = %d, standard deviation = %.2f", 100, sqrt(100 * .98 * .02))
+sprintf("Given n = %d, standard deviation = %.2f", 500, sqrt(500 * .98 * .02))
+sprintf("Given n = %d, standard deviation = %.2f", 1000, sqrt(1000 * .98 * .02))
+
+
+```
+*The standard deviation increases as sample sizes increases but it increases at a lower rate than n increases.*
+
+
+
+
+(d) Another machine that also produces transistors has a 5% defective rate where each transistor
+is produced independent of the others. On average how many transistors would you expect to be produced with this machine before the first with a defect? What is the standard deviation?
+
+*The probability of first failure with P(X) could be calculated as*
+\begin{center}
+$\frac{1}{P(X)}$
+\end{center}
+
+*or the rgeom function can simulate trials of first success/failure*
+```{r}
+n=1000
+
+sample_trials<-rgeom(n,.05)
+sd_trials<-sd(sample_trials)
+
+sprintf("The mean of our trials of first defective transistor is %.2f", mean(sample_trials))
+sprintf("The sample deviation is %.2f",sd_trials)
+
+```
+
+
+
+(e) Based on your answers to parts (c) and (d), how does increasing the probability of an event affect the mean and standard deviation of the wait time until success?
+
+*Generally the larger the sample size, the closer to actual size*
+```{r}
+
+n=100000
+
+sample_trials<-rgeom(n,.05)
+sd_trials<-sd(sample_trials)
+
+sprintf("The new mean of our trials of first defective transistor is %.2f", mean(sample_trials))
+sprintf("The new sample deviation is %.2f",sd_trials)
+
+```
+
+
+
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**Male children.** While it is often assumed that the probabilities of having a boy or a girl are the same, the actual probability of having a boy is slightly higher at 0.51. Suppose a couple plans to have 3 kids.
+
+(a) Use the binomial model to calculate the probability that two of them will be boys.
+```{r}
+p_boy<-.51
+p_girl<-.49
+
+p_2_boys_1_girl<-p_boy^2 * p_girl * 3      # there are 3 ways in which 2 boys can be selected
+sprintf("The probability of 2 boys is %.2f",p_2_boys_1_girl)
+
+
+
+```
+
+
+
+(b) Write out all possible orderings of 3 children, 2 of whom are boys. Use these scenarios to calculate the same probability from part (a) but using the addition rule for disjoint outcomes. Confirm that your answers from parts (a) and (b) match.
+
+
+
+
+\begin{center}
+\begin{tabular}{|c c c|}
+\hline
+
+  Child1  & Child2     & Child3 \\
+\hline
+  G & B & B  \\
+\hline
+  B  & G  & B \\
+\hline
+   B & B & G  \\
+
+
+\end{tabular}
+\end{center}
+
+
+\begin{center}
+P(G and B and B) = .51 * .51 * .49 = .1275 
+
+P(B and G and B) = .51 * .51 * .49 = .1275 
+
+P(B and B and G) = .51 * .51 * .49 = .1275
+\end{center}
+
+
+(c) If we wanted to calculate the probability that a couple who plans to have 8 kids will have 3 boys, briefly describe why the approach from part (b) would be more tedious than the approach from part (a).
+
+*Part A condenses several additions into one multiplication, so it was done with one line.*
+
+
+
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**Serving in volleyball.** (4.30, p. 162) A not-so-skilled volleyball player has a 15% chance of making the serve, which involves hitting the ball so it passes over the net on a trajectory such that it will land in the opposing team's court. Suppose that her serves are independent of each other.
+
+(a) What is the probability that on the 10th try she will make her 3rd successful serve?
+
+```{r}
+
+# 1) the probability of a 3 in 10 permutation in any order 
+good_serve_perm<-.85^7 * .15^3
+
+# 2) what are the number of ways to get 2 sucesses in 9 tries in any order (9 choose 2)
+good_serve_ways<-choose(9,2)
+
+# 3) multiply the probability of a unique 10 choose 3 result and the number of non unique 9 choose 2 ways
+
+sprintf("The probability of hitting the 3rd success on the 10the try is %.3f", 
+        good_serve_ways * good_serve_perm)
+
+```
+
+
+(b) Suppose she has made two successful serves in nine attempts. What is the probability that her 10th serve will be successful?
+
+*Any individual serve has a 15% chance of sucess.*
+
+(c) Even though parts (a) and (b) discuss the same scenario, the probabilities you calculated should be different. Can you explain the reason for this discrepancy?
+
+*Probability only calculates what is unknown. part a) asked us to find probility on 10 unknown events. part b) asked about 1 unknown event.*
+
+
+
+
+
