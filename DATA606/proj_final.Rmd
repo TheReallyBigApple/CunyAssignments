@@ -1,0 +1,1047 @@
+---
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab_proj.css
+    highlight: pygments
+    theme: cerulean
+    
+urlcolor: blue
+
+---
+
+
+<!-- F11 USING CHROME ZOOM AT 125%-->
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+<h1>Worldwide Governance Indicators 1996–2019</h1>
+
+
+
+
+```{r setup, echo=FALSE, results='show', warning=FALSE, message=FALSE}
+
+
+# BECAUSE YOU INTRODUCE THE GROUPS AT THE BEGINNIN, YOU SHOULD DO ANOVA FIRST
+
+
+
+knitr::opts_chunk$set(results=TRUE, echo = FALSE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+
+countries.df  <- read.csv("C:\\Users\\arono\\source\\R\\wgi_project\\cty_groups.csv")
+# temp <- tempfile()
+
+
+wgi.df  <- read.csv("C:\\Users\\arono\\source\\R\\wgi_project\\WGIData.csv")
+
+#  fix column headers
+colnames(countries.df)[1]<-"cty_code"
+colnames(wgi.df)[2]<-"cty_code"
+colnames(wgi.df)[3]<-"ind_name"
+colnames(wgi.df)[1]<-"cty_name"
+colnames(wgi.df)[4]<-"ind_code"
+
+wgi.df<-wgi.df %>%
+  drop_na(X1996) %>%
+  drop_na(X2019) %>%
+  mutate(progress = X2019-X1996 , progress1H = X2000-X1996,  progress2H = X2004-X2000 )
+
+# progress1H = X2008-X1996,  progress2H = X2019-X2008 
+wgi.df$X1996<-round(wgi.df$X1996,3)
+wgi.df$X2004<-round(wgi.df$X2004,3) 
+wgi.df$X2012<-round(wgi.df$X2012,3) 
+wgi.df$X2019<-round(wgi.df$X2019,3)  
+wgi.df$progress<-round(wgi.df$progress,3) 
+wgi.df$progress1H<-round(wgi.df$progress1H,3) 
+wgi.df$progress2H<-round(wgi.df$progress2H,3) 
+
+wgi.df<-merge(countries.df, wgi.df, by="cty_code")
+
+# isloate the CC
+wgi_cc.df<-subset(wgi.df,ind_code=='CC.EST')
+wgi_va.df<-subset(wgi.df,ind_code=='VA.EST')
+
+
+va_prog_mean <- mean(wgi_va.df$progress)
+va_prog_sd   <- sd(wgi_va.df$progress)
+
+cc_prog_mean <- mean(wgi_cc.df$progress)
+cc_prog_sd   <- sd(wgi_cc.df$progress)
+
+
+va_prog_mean<-round(va_prog_mean,2)
+va_prog_sd<-round(va_prog_sd,2)
+cc_prog_mean<-round(cc_prog_mean,2)
+cc_prog_sd<-round(cc_prog_sd,2)
+
+
+va_prog_title=sprintf("VA Mean = %.3f   SD = %.3f", va_prog_mean, va_prog_sd)
+cc_prog_title=sprintf("CC Mean = %.3f   SD = %.3f", cc_prog_mean, cc_prog_sd)
+
+va_19_mean <- mean(wgi_va.df$X2019)
+va_19_sd   <- sd(wgi_va.df$X2019)
+
+cc_19_mean <- mean(wgi_cc.df$X2019)
+cc_19_sd   <- sd(wgi_cc.df$X2019)
+
+va_19_mean<-round(va_19_mean,2)
+va_19_sd<-round(va_19_sd,2)
+cc_19_mean<-round(cc_19_mean,2)
+cc_19_sd<-round(cc_19_sd,2)
+
+va_19_title=sprintf("VA Mean = %.3f   SD = %.3f", va_19_mean, va_19_sd)
+cc_19_title=sprintf("CC Mean = %.3f   SD = %.3f", cc_19_mean, cc_19_sd)
+
+
+prog_title<-paste(va_prog_title,"\n",cc_prog_title,"\n")
+
+X2019_title<-paste(va_19_title,"\n",cc_19_title,"\n")
+
+
+
+
+# -------------------------------------------------------------------------------------------------------
+#
+# NOTE : wgi_cc_va has seperate columns for cc_progress, cc_2019, va_progress, va_2019, it has 187 records
+#        wgi_cc_va_cat has X2019, progress and the "Estimate" field which takes on values Accountability and Corruption
+#               it has 385 records
+# -------------------------------------------------------------------------------------------------------
+
+
+# merge cc and va into 1 table
+
+wgi_cc_va.df<-subset(wgi.df,ind_code=='CC.EST')[c("synergy_group", "Country", "X2019","progress", "progress2H")]
+
+wgi_va_tmp.df<-subset(wgi.df,ind_code=='VA.EST')[c("synergy_group", "Country", "X2019","progress","progress1H")]
+
+names(wgi_cc_va.df)<-c(c("synergy_group", "Country", "cc_2019","cc_progress","cc_progress2H"))
+names(wgi_va_tmp.df)<-c(c("synergy_group", "Country", "va_2019","va_progress","va_progress1H"))
+
+
+wgi_cc_va.df<-merge(wgi_cc_va.df,wgi_va_tmp.df, by = c("Country","synergy_group"))
+
+
+
+# -------------------------------------------------------------------------------------------------------
+
+
+
+
+wgi_cc_va_cat.df<-subset(wgi.df,ind_code=='CC.EST' | ind_code=='VA.EST' )
+
+
+wgi_cc_va_cat.df$ind_code=as.factor(wgi_cc_va_cat.df$ind_code)
+
+levels(wgi_cc_va_cat.df$ind_code)[levels(wgi_cc_va_cat.df$ind_code)=="CC.EST"] <- "Corruption"
+
+levels(wgi_cc_va_cat.df$ind_code)[levels(wgi_cc_va_cat.df$ind_code)=="VA.EST"] <- "Accountability"
+
+names(wgi_cc_va_cat.df)[names(wgi_cc_va_cat.df)=="ind_code"]  <- "Estimate"
+
+
+```
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br>
+
+<strong>6 Dimensions of Governance.</strong>
+
+
+
+<ol>
+      <li>Control of Corruption</li>
+      <li>Voice and Accountability</li>
+      <li>Rule of Law</li>
+      <li>Regulatory Quality</li>
+      <li>Political Stability and Absence of Violence/Terrorism</li>
+      <li>Government Effectiveness</li>
+</ol>
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+
+<strong>5 Synergy Groups</strong>
+
+
+<ol>
+      <li>Andean</li>
+      <li>APAC</li>
+      <li>Baltic</li>
+      <li>MidEast</li>
+      <li>Nordic</li>
+</ol>
+
+<br><br><br><br><br><br>
+
+*A synergy group is a set of countries whose peoples have a high degree of shared culture, communication and commerce.*
+
+
+<br><br><br><br><br><br><br><br><br>
+
+<strong>2 Questions</strong>
+
+<br><br>
+
+*Do governments progress within synergy groups ?*
+
+
+
+<br>
+
+*To what extent does Voice and Accountability drive Control of Corruption ?*
+
+
+
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+
+<center>
+<h2>Example Data : Voice And Accountability</h2>
+</center>
+
+<br><br>
+
+captures *perceptions* of the extent to which a country's citizens are able to participate in selecting their government, as well as freedom of expression, freedom of association, and a free media. 
+
+<br><br>
+
+
+```{r}
+
+selected_va<-subset(wgi_va.df, Country=='Korea North' 
+                    | Country=='Cuba'
+                    | Country=='United States'
+                    | Country=='Norway'
+                    )[c("Country", "X1996","X2004","X2012", "X2019","progress")]
+
+
+
+selected_va<-selected_va[order(selected_va$X2019),]
+
+names(selected_va)<-c("Country", "_1996_", "_2004_", "_2012_", "_2019_", "Progress")
+
+kable(selected_va, caption="",row.names = FALSE,format="simple", booktabs=TRUE)
+
+```
+
+
+
+
+<br><br><br><br><br><br><br>
+
+
+
+
+<center>
+<h2>Example Data : Control of Corruption</h2>
+</center>
+
+<br><br>
+
+
+captures *perceptions* of the extent to which public power is exercised for private gain
+
+
+<br><br>
+
+
+```{r}
+
+selected_cc<-subset(wgi_cc.df, Country=='Uganda' 
+                    | Country=='Nicaragua'
+                    | Country=='United States'
+                    | Country=='New Zealand'
+                    )[c("Country", "X1996","X2004","X2012", "X2019","progress")]
+
+selected_cc<-selected_cc[order(selected_cc$X2019),]
+
+names(selected_cc)<-c("Country", "_1996_", "_2004_", "_2012_", "_2019_", "Progress")
+
+kable(selected_cc, caption="",row.names = FALSE,format="simple", booktabs=TRUE)
+
+```
+
+
+
+<br><br><br><br><br><br>
+
+
+<center>
+<h2>Andean Countries</h2>
+</center>
+
+<br><br>
+
+<h3>&emsp; &emsp; &emsp; &emsp;  Voice and Accountability  &emsp; &emsp;  &emsp; &emsp; &emsp; &emsp; &emsp; Control of Corruption</h3>
+
+```{r}
+
+Andean_va<-subset(wgi_va.df, synergy_group=='Andean')[c("Country", "X1996","X2019", "progress")]
+Andean_cc<-subset(wgi_cc.df, synergy_group=='Andean')[c("X1996","X2019", "progress")]
+
+names(Andean_va)<-c("Country", "_1996_", "_2019_", "Progress")
+names(Andean_cc)<-c("_1996_", "_2019_", "Progress")
+
+kable(Andean_va, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "8em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, width = "6em") %>%
+  column_spec(4, bold = T, color = "purple", width = "8em") 
+
+kable(Andean_cc, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "6em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, bold = T, color = "purple", width = "8em") 
+
+
+
+```
+
+
+
+<br><br><br><br><br><br><br><br><br><br>
+
+<br><br><br><br><br><br><br><br><br><br>
+
+
+<center>
+<h2>APAC Countries</h2>
+</center>
+
+<br><br>
+<h3>&emsp; &emsp; &emsp; &emsp;  Voice and Accountability  &emsp; &emsp;  &emsp; &emsp; &emsp; &emsp; &emsp; Control of Corruption</h3>
+
+```{r}
+
+APAC_va<-subset(wgi_va.df, synergy_group=='APAC')[c("Country", "X1996","X2019", "progress")]
+APAC_cc<-subset(wgi_cc.df, synergy_group=='APAC')[c("X1996","X2019", "progress")]
+
+names(APAC_va)<-c("Country", "_1996_", "_2019_", "Progress")
+names(APAC_cc)<-c("_1996_", "_2019_", "Progress")
+
+kable(APAC_va, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "8em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, width = "6em") %>%
+  column_spec(4, bold = T, color = "purple", width = "8em") 
+
+kable(APAC_cc, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "6em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, bold = T, color = "purple", width = "8em") 
+
+
+
+```
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br>
+
+<br><br><br><br><br><br>
+
+
+
+<center>
+<h2>Baltic Countries</h2>
+</center>
+
+<br><br>
+<h3>&emsp; &emsp; &emsp; &emsp;  Voice and Accountability  &emsp; &emsp;  &emsp; &emsp; &emsp; &emsp; &emsp; Control of Corruption</h3>
+
+```{r}
+
+Baltic_va<-subset(wgi_va.df, synergy_group=='Baltic')[c("Country", "X1996","X2019", "progress")]
+Baltic_cc<-subset(wgi_cc.df, synergy_group=='Baltic')[c("X1996","X2019", "progress")]
+
+names(Baltic_va)<-c("Country", "_1996_", "_2019_", "Progress")
+names(Baltic_cc)<-c("_1996_", "_2019_", "Progress")
+
+kable(Baltic_va, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "8em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, width = "6em") %>%
+  column_spec(4, bold = T, color = "purple", width = "8em") 
+
+kable(Baltic_cc, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "6em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, bold = T, color = "purple", width = "8em") 
+
+
+
+```
+
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+<br><br><br><br><br>
+
+<center>
+<h2>MidEast Countries</h2>
+</center>
+
+<br><br>
+<h3>&emsp; &emsp; &emsp; &emsp;  Voice and Accountability  &emsp; &emsp;  &emsp; &emsp; &emsp; &emsp; &emsp; Control of Corruption</h3>
+
+```{r}
+
+MidEast_va<-subset(wgi_va.df, synergy_group=='MidEast')[c("Country", "X1996","X2019", "progress")]
+MidEast_cc<-subset(wgi_cc.df, synergy_group=='MidEast')[c("X1996","X2019", "progress")]
+
+names(MidEast_va)<-c("Country", "_1996_", "_2019_", "Progress")
+names(MidEast_cc)<-c("_1996_", "_2019_", "Progress")
+
+kable(MidEast_va, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "8em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, width = "6em") %>%
+  column_spec(4, bold = T, color = "purple", width = "8em") 
+
+kable(MidEast_cc, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "6em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, bold = T, color = "purple", width = "8em") 
+
+
+
+```
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+<center>
+<h2>Nordic Countries</h2>
+</center>
+
+
+<br><br>
+<h3>&emsp; &emsp; &emsp; &emsp;  Voice and Accountability  &emsp; &emsp;  &emsp; &emsp; &emsp; &emsp; &emsp; Control of Corruption</h3>
+
+```{r}
+
+Nordic_va<-subset(wgi_va.df, synergy_group=='Nordic')[c("Country", "X1996","X2019", "progress")]
+Nordic_cc<-subset(wgi_cc.df, synergy_group=='Nordic')[c("X1996","X2019", "progress")]
+
+names(Nordic_va)<-c("Country", "_1996_", "_2019_", "Progress")
+names(Nordic_cc)<-c("_1996_", "_2019_", "Progress")
+
+kable(Nordic_va, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "8em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, width = "6em") %>%
+  column_spec(4, bold = T, color = "purple", width = "8em") 
+
+kable(Nordic_cc, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 18) %>%
+  column_spec(1, width = "6em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, bold = T, color = "purple", width = "8em") 
+
+
+
+```
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br>
+
+<center>
+<h2>Group Summary</h2>
+</center>
+
+
+<br><br>
+<h3>&emsp; &emsp; &emsp; &emsp;  Voice and Accountability  &emsp; &emsp;  &emsp; &emsp; &emsp; &emsp; &emsp; Control of Corruption</h3>
+
+
+```{r}
+
+
+sum_va<-wgi_va.df %>%
+  group_by(synergy_group) %>%
+  summarize(countries=n(), X1996 = mean(X1996), X2019 = mean(X2019), prog = mean(progress), sd = sd(progress)) 
+
+
+# View(show_everyone)
+
+sum_va$X1996 = round(sum_va$X1996,3)
+sum_va$X2019 = round(sum_va$X2019,3)
+sum_va$prog = round(sum_va$prog,3)
+sum_va$sd = round(sum_va$sd,3)
+
+names(sum_va)<-c("Group", "Countries", "_1996_", "_2019_", "Progress", "SD")
+
+
+
+
+
+
+sum_cc<-wgi_cc.df %>%
+  group_by(synergy_group) %>%
+  summarize(countries=n(), X1996 = mean(X1996), X2019 = mean(X2019), prog = mean(progress), sd = sd(progress)) 
+
+
+# View(show_everyone)
+
+sum_cc$X1996 = round(sum_cc$X1996,3)
+sum_cc$X2019 = round(sum_cc$X2019,3)
+sum_cc$prog = round(sum_cc$prog,3)
+sum_cc$sd = round(sum_cc$sd,3)
+
+names(sum_cc)<-c("Group", "Countries", "_1996_", "_2019_", "Progress", "SD")
+
+sum_cc$Group <- NULL
+sum_cc$Countries <- NULL
+
+
+kable(sum_va, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 16) %>%
+  column_spec(1, width = "4em") %>%
+  column_spec(2, width = "3em") %>%
+  column_spec(3, width = "4em") %>%
+    column_spec(4, width = "4em") %>%
+  column_spec(5, bold = T, color = "purple", width = "6em")  %>%
+      column_spec(6, width = "4em") 
+
+
+
+kable(sum_cc, caption="",row.names = FALSE) %>%
+  kable_styling(c("striped", "hover", "responsive"), full_width = F, position = "float_right", font_size = 16) %>%
+  column_spec(1, width = "6em") %>%
+  column_spec(2, width = "6em") %>%
+  column_spec(3, bold = T, color = "purple", width = "6em")  %>%
+  column_spec(4, width = "6em")
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br>
+
+<br><br><br><br><br>
+
+
+
+
+
+
+<center>
+<h2>Review Normalcy : Frequency Distributions</h2>
+</center>
+
+<br><br>
+
+```{r, fig.width = 18}
+
+
+# NORMALITY IS REQUIRED TO DRAW INFERENCE INTO A LARGER POPULATION  WHICH IS NOT REALY WHAT WE ARE DOING HERE
+
+#  AT TIMES, WE WILL REFER TO THE SCORES AS JUST "ACCOUNTABILITY" and CORRUPTION" scores
+
+# THIS IS INTERESTING AS THE SCORES, WHICH YOU MIGHT WONDER IF THE GRADERS WERE TRYING TO AHDERE TO A BELL CURVE, is actually less normal
+#  the median and mean of any net distribution, of course should be be close to 0
+# create a table that has ind_code as a category
+
+
+
+
+plot1<- ggplot(wgi_cc_va_cat.df, aes(progress, color = Estimate )) + 
+  geom_density() +
+  labs(x = "\n Progress 1996-2019 ", y = "Density\n", title = prog_title) +
+  scale_fill_discrete(       labels = c("Corruption", "Accountability")  ) +
+    theme(plot.title = element_text(hjust = 0.5) )
+
+
+plot2<- ggplot(wgi_cc_va_cat.df, aes(X2019,color = Estimate  )) + 
+  geom_density() +
+  labs(x = "\n 2019 Scores ", y = "Density\n", title = X2019_title ) +
+    theme(plot.title = element_text(hjust = 0.5) )
+
+
+grid.arrange(plot1, plot2, ncol = 2)
+
+
+```
+
+<br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br>
+
+
+
+
+# Do governments progress as groups ?
+
+<br><br>
+<center>
+<h2>Control of Corruption 1996-2019 : Is Anova Appropriate ?</h2>
+</center>
+
+    1)	Independence
+    2)	Normality within the groups
+    3)	Constant Variability
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+```{r}
+
+boxplot(cc_progress ~ synergy_group, xlab="Synergy Group", ylab="Corruption 1996-2019", las=1, data=wgi_cc_va.df)
+
+```
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+$H_0$  = All synergy groups have the same mean (Control of Corruption progress from 1996 to 2019 )
+
+$H_A$  = Not all synergy groups have the same mean
+
+<!-- If F Statistic > 1, we generally say that is enough to reject H0 -->
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br>
+
+
+$$SSE \ = \ \sum_i \sum_j (x_{ij} - \bar{x})^2 $$
+
+$$SSTr = \sum n_i(\bar{x}_i \ - \ \bar{x})^2$$
+
+
+$$FStat \ = \ \frac{SSTr/(k-1)}{SSE/(n-k)}$$
+
+
+<br><br><br><br><br><br><br><br><br>
+<br><br><br>
+
+<center>
+<h2>Model Summary and Anova : CC Progress</h2>
+</center>
+
+```{r}
+
+m_new<- lm(cc_progress ~ synergy_group, data = wgi_cc_va.df)
+summary(m_new)
+anova(m_new)
+
+```
+
+
+
+<br><br><br><br><br><br>
+
+<center>
+<h2>Model Summary and Anova : CC Progress : Without Other</h2>
+</center>
+
+```{r}
+wgi_new.df<-subset(wgi_cc_va.df,synergy_group!='Other')
+
+m_new<- lm(cc_progress ~ synergy_group, data = wgi_new.df)
+summary(m_new)
+anova(m_new)
+
+```
+
+
+
+
+<br><br><br><br><br>
+
+<center>
+<h2>Model Summary and Anova : 2019 CC Scores : Without Other </h2>
+</center>
+
+```{r}
+wgi_new.df<-subset(wgi_cc_va.df,synergy_group!='Other')
+
+m_new<- lm(cc_2019 ~ synergy_group, data = wgi_new.df)
+summary(m_new)
+anova(m_new)
+
+```
+
+
+
+
+<br><br><br><br><br><br><br><br><br>
+
+# Linear Regression
+
+
+
+
+```{r create the model}
+
+# THE T VALUE IS ESTIMATE/STD ERROR  "not for bivariate regression"
+
+# R SQUARED shows how reliable the "variance of y is explained by the change in x" is
+# RSE shows overall dispersion 
+
+m_prog <- lm(cc_progress ~ va_progress, data = wgi_cc_va.df)
+s_prog<-summary(m_prog)
+
+m_prog_2 <- lm(cc_progress2H ~ va_progress1H, data = wgi_cc_va.df)
+s_prog_2<-summary(m_prog_2)
+
+
+# View(cbind(wgi_cc_va.df$va_progress1H, wgi_cc_va.df$cc_progress2H))
+
+
+
+m_19 <- lm(cc_2019 ~ va_2019, data = wgi_cc_va.df)
+s_19<-summary(m_19)
+
+s_prog_sigma<-s_prog$sigma
+s_prog_rsquared<-s_prog$r.squared
+
+
+s_prog_2_sigma<-s_prog_2$sigma
+s_prog_2_rsquared<-s_prog_2$r.squared
+
+s_19_sigma<-s_19$sigma
+s_19_rsquared<-s_19$r.squared
+
+
+s_prog_b<-s_prog$coefficients[1,1]
+s_prog_m<-s_prog$coefficients[2,1]
+
+s_prog_2_b<-s_prog_2$coefficients[1,1]
+s_prog_2_m<-s_prog_2$coefficients[2,1]
+
+s_19_b<-s_19$coefficients[1,1]
+s_19_m<-s_19$coefficients[2,1]
+
+```
+
+<br><br>
+
+$H_0$  = Accountability and Corruption <i><b>do not have</b></i> a positive correlation
+
+$H_A$  = Accountability and Corruption <i><b>do have</b></i> a positive correlation
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<center>
+<h2>Progress 1996-2019 : Is Least Squared Regression Appropriate ?</h2>
+</center>
+
+    1)	Linearity
+    2)	Normality of the Residuals
+    3)	Constant Variability
+    4)	Independence
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+<br><br><br>
+
+
+```{r hist-res}
+
+ggplot(data = m_prog, aes(x = m_prog$residuals)) +
+  geom_histogram(binwidth = .06) +
+  xlab("Residuals of the linear model")
+
+```
+
+
+
+
+<br><br><br><br><br><br>
+
+QQNorm :
+
+
+```{r}
+qqnorm(m_prog$residuals, main="QQNorm")
+
+```
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br>
+
+<!-- "positive correlation"" is stated because i am positing that they would move in the same direction -->
+
+<!-- our tools and pvalues are clinical, but this work is to create thoughts and conversation  -->
+
+<!--  so our real question is to what extent does Accountability and Corruption move in tandem -->
+
+```{r}
+# uses geom_jitter in an effort to display every point although not really necessary with this data
+# this is the linear relationship...change in cc progress for every unit increase in va progress
+# the line is often called the least squares regression line
+# the shadow is the variablitiy at that point, you could add se = FALSE  to remove it
+
+ggplot(data = wgi_cc_va.df, aes(x = va_progress, y = cc_progress)) +
+geom_jitter() +
+geom_smooth(method = "lm") +
+labs(x = "\n Voice and Accountability", y = "Control of Corruption\n", title = "\n Progress 1996-2019 \n") +
+  theme(plot.title = element_text(hjust = 0.5, face="bold", colour="blue", size = 16),      # center the title
+        axis.title.x = element_text(face="bold", colour="red", size = 12),
+        axis.title.y = element_text(face="bold", colour="red", size = 12) )
+
+
+```
+
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+<center>
+<h2>How good is this linear model ?</h2>
+</center>
+
+<!--   There are several important metrics.   -->
+
+
+<!-- each of these have several equations depending which variables you start with -->
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br>
+
+1) Correlation = **.38**
+
+<!-- also called Correlation Coefficient or R  or Pearsons R -->
+
+$$R \ = \ \frac{1}{n-1} \ \sum_{i=1} \ \frac{x_i-\bar{x}}{S_x} \ \frac{y_i-\bar{y}}{S_y}$$
+
+
+
+
+<!-- fyi, if we compare VA to CC for 2019 scores we get R = 0.778 -->
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br>
+
+
+2) Coefficient of Determination $(R^2)$ = **.14**
+
+$$R^2 \ = \ 1 - \frac{Var(residuals)}{Var(observations)}$$
+
+
+
+<!-- converts -1 to 1 to a value between 0 and 1  -->
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br>
+
+3) Covariance = **0.78**
+
+
+$$COV \ = \ \sum \frac{(x_i-\bar{x})(y_i-\bar{y})}{n-1}$$
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br>
+
+4) Residual Standard Error = **0.42**
+
+$$RSE ( \sigma^2)  \ = \ \sqrt{\frac{\sum (y_i \ - \ \hat{y} )}{n-2}}$$
+
+
+<br><br>
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+5) F Statistic = **32.20**
+
+
+
+<!-- a high f stat, we can say the se is small in relation to the absolute value of the slope -->
+<!-- an equivalent calc iss RSS/SSREG which sets the mean between your residual and fitted values -->
+<!-- a little more difficult to understand -->
+
+
+$$F Stat \ = \ (\frac{m}{se})^2$$
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br>
+
+<br><br><br><br><br><br><br><br><br><br>
+
+6) Variances = **.21** and **.22**
+
+<br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br>
+
+7) T-Tests
+
+
+
+```{r}
+
+ttest.df<-data.frame(field="progress", paired="FALSE",TScore=-0.686,df=371.84, pval=0.492)
+
+ttest.df<-rbind(ttest.df, data.frame(field="progress", paired="TRUE",TScore=-0.875,df=186, pval=0.382))
+
+ttest.df<-rbind(ttest.df, data.frame(field="2019", paired="FALSE",TScore=-0.137,df=371.88, pval=0.890))
+
+ttest.df<-rbind(ttest.df, data.frame(field="2019", paired="TRUE",TScore=-0.291,df=186, pval=0.77))
+
+
+kable(ttest.df, caption="",row.names = FALSE) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 16) %>%
+  column_spec(1, width = "4em") %>%
+  column_spec(2, width = "3em") %>%
+  column_spec(3, width = "4em") %>%
+    column_spec(4, width = "4em") %>%
+  column_spec(5, bold = T, color = "purple", width = "6em")  
+```
+
+
+
+
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+<center>
+<h2>Progress 1996-2019: Predictions</h2>
+</center>
+
+
+```{r}
+
+
+some.va <- data.frame(  va_progress = seq(-2,2,.4) )
+
+some.va$cc_progress<-predict(m_prog, newdata = some.va)
+
+
+
+kable(some.va, caption="",row.names = FALSE,format="simple", booktabs=TRUE)
+        
+```
+
+
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+<center>
+
+<h2>Question : </h2> *If Voice and Accountability influences Control of Corruption,*
+*wouldnt there be a year or 2 delay to see the response?*
+</center>
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br>
+
+```{r}
+
+# THIS HAS A RSQUARED OF .007 WHICH MEANS THE RELATIONSHIP IS VERY WEAK
+
+# FOR EVERY COUNTRY HOW CORRELATED IS THEIR ACCOUNTABILITY PROGRESS FROM 96-08 to 08-19 , 04-00 and 00-96
+
+# SEVERAL VARIATIONS WERE TRIED, AND THE RESULTS WERE THE SAME
+
+
+ggplot(data = wgi_cc_va.df, aes(x = va_progress1H, y = cc_progress2H)) +
+geom_jitter() +
+geom_smooth(method = "lm") +
+xlab("Accountability Progress From 1996-2000")  +
+ylab("Corruption Progress From 2000-2004")
+
+
+
+```
+<!--  IN CONCLUSION -->
+
+<!-- both are scale and scope questions, both are conversation starters -->
+
+
+<br><br><br><br><br><br><br><br>
+
+
+
+
+
+
+
+
+
