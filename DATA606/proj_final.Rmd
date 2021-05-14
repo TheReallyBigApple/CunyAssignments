@@ -13,8 +13,9 @@ urlcolor: blue
 
 
 <!-- F11 USING CHROME ZOOM AT 125%-->
+<!-- keep items up top, avoid any stuff on bottom  -->
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br>
 
 <h1>Worldwide Governance Indicators 1996–2019</h1>
 
@@ -192,19 +193,19 @@ names(wgi_cc_va_cat.df)[names(wgi_cc_va_cat.df)=="ind_code"]  <- "Estimate"
 *A synergy group is a set of countries whose peoples have a high degree of shared culture, communication and commerce.*
 
 
-<br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br>
 
 <strong>2 Questions</strong>
 
 <br><br>
 
-*Do governments progress within synergy groups ?*
+*Anova : Do governments progress within synergy groups ?*
 
 
 
 <br>
 
-*To what extent does Voice and Accountability drive Control of Corruption ?*
+*Linear Regression : To what extent does Voice and Accountability drive Control of Corruption ?*
 
 
 
@@ -213,7 +214,7 @@ names(wgi_cc_va_cat.df)[names(wgi_cc_va_cat.df)=="ind_code"]  <- "Estimate"
 
 
 
-<br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br>
 
 
 
@@ -285,7 +286,7 @@ kable(selected_cc, caption="",row.names = FALSE,format="simple", booktabs=TRUE)
 
 
 
-<br><br><br><br><br><br>
+<br><br><br><br>
 
 
 <center>
@@ -366,7 +367,7 @@ kable(APAC_cc, caption="",row.names = FALSE) %>%
 
 <br><br><br><br><br><br><br><br><br><br><br><br>
 
-<br><br><br><br><br><br>
+<br><br><br><br><br>
 
 
 
@@ -409,7 +410,7 @@ kable(Baltic_cc, caption="",row.names = FALSE) %>%
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
-<br><br><br><br><br>
+<br><br><br>
 
 <center>
 <h2>MidEast Countries</h2>
@@ -445,7 +446,7 @@ kable(MidEast_cc, caption="",row.names = FALSE) %>%
 
 
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 
 <center>
@@ -585,7 +586,7 @@ kable(sum_cc, caption="",row.names = FALSE) %>%
 
 <br><br>
 
-```{r, fig.width = 18}
+```{r, fig.width = 26, fig.height= 10}
 
 
 # NORMALITY IS REQUIRED TO DRAW INFERENCE INTO A LARGER POPULATION  WHICH IS NOT REALY WHAT WE ARE DOING HERE
@@ -618,12 +619,12 @@ grid.arrange(plot1, plot2, ncol = 2)
 ```
 
 <br><br><br><br><br><br><br><br><br><br><br><br>
-<br><br><br><br>
+<br><br><br>
 
 
 
 
-# Do governments progress as groups ?
+# Anova: Do governments progress as groups ?
 
 <br><br>
 <center>
@@ -661,7 +662,7 @@ $H_A$  = Not all synergy groups have the same mean
 
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br>
-<br><br><br><br>
+<br><br><br>
 
 
 $$SSE \ = \ \sum_i \sum_j (x_{ij} - \bar{x})^2 $$
@@ -669,11 +670,11 @@ $$SSE \ = \ \sum_i \sum_j (x_{ij} - \bar{x})^2 $$
 $$SSTr = \sum n_i(\bar{x}_i \ - \ \bar{x})^2$$
 
 
-$$FStat \ = \ \frac{SSTr/(k-1)}{SSE/(n-k)}$$
+$$Group \ FStat \ = \ \frac{SSTr/(k-1)}{SSE/(n-k)} \ = \ \frac{MSG}{MSE}$$
 
 
 <br><br><br><br><br><br><br><br><br>
-<br><br><br>
+<br><br>
 
 <center>
 <h2>Model Summary and Anova : CC Progress</h2>
@@ -725,9 +726,9 @@ anova(m_new)
 
 
 
-<br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br>
 
-# Linear Regression
+# Linear Regression : Does Accountability Effect Corruption ?
 
 
 
@@ -738,6 +739,7 @@ anova(m_new)
 
 # R SQUARED shows how reliable the "variance of y is explained by the change in x" is
 # RSE shows overall dispersion 
+
 
 m_prog <- lm(cc_progress ~ va_progress, data = wgi_cc_va.df)
 s_prog<-summary(m_prog)
@@ -760,18 +762,20 @@ s_prog_rsquared<-s_prog$r.squared
 s_prog_2_sigma<-s_prog_2$sigma
 s_prog_2_rsquared<-s_prog_2$r.squared
 
-s_19_sigma<-s_19$sigma
-s_19_rsquared<-s_19$r.squared
+# s_19_sigma<-s_19$sigma
+# s_19_rsquared<-s_19$r.squared
 
 
 s_prog_b<-s_prog$coefficients[1,1]
 s_prog_m<-s_prog$coefficients[2,1]
 
-s_prog_2_b<-s_prog_2$coefficients[1,1]
-s_prog_2_m<-s_prog_2$coefficients[2,1]
+# s_prog_2_b<-s_prog_2$coefficients[1,1]
+# s_prog_2_m<-s_prog_2$coefficients[2,1]
 
 s_19_b<-s_19$coefficients[1,1]
 s_19_m<-s_19$coefficients[2,1]
+
+
 
 ```
 
@@ -796,7 +800,6 @@ $H_A$  = Accountability and Corruption <i><b>do have</b></i> a positive correlat
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
-<br><br><br>
 
 
 ```{r hist-res}
@@ -824,13 +827,9 @@ qqnorm(m_prog$residuals, main="QQNorm")
 
 
 
-<br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br>
 
-<!-- "positive correlation"" is stated because i am positing that they would move in the same direction -->
 
-<!-- our tools and pvalues are clinical, but this work is to create thoughts and conversation  -->
-
-<!--  so our real question is to what extent does Accountability and Corruption move in tandem -->
 
 ```{r}
 # uses geom_jitter in an effort to display every point although not really necessary with this data
@@ -854,20 +853,14 @@ labs(x = "\n Voice and Accountability", y = "Control of Corruption\n", title = "
 
 
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 
-<center>
-<h2>How good is this linear model ?</h2>
-</center>
-
-<!--   There are several important metrics.   -->
 
 
 <!-- each of these have several equations depending which variables you start with -->
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-<br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+
 
 1) Correlation = **.38**
 
@@ -878,50 +871,34 @@ $$R \ = \ \frac{1}{n-1} \ \sum_{i=1} \ \frac{x_i-\bar{x}}{S_x} \ \frac{y_i-\bar{
 
 
 
-<!-- fyi, if we compare VA to CC for 2019 scores we get R = 0.778 -->
+
+
+
 
 
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-<br><br><br><br>
-
-
-2) Coefficient of Determination $(R^2)$ = **.14**
-
-$$R^2 \ = \ 1 - \frac{Var(residuals)}{Var(observations)}$$
-
-
-
-<!-- converts -1 to 1 to a value between 0 and 1  -->
-
-
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 <br><br>
 
-3) Covariance = **0.78**
-
-
-$$COV \ = \ \sum \frac{(x_i-\bar{x})(y_i-\bar{y})}{n-1}$$
-
-
-
-
-
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-<br><br><br>
-
-4) Residual Standard Error = **0.42**
+2) Residual Standard Error = **0.42**
 
 $$RSE ( \sigma^2)  \ = \ \sqrt{\frac{\sum (y_i \ - \ \hat{y} )}{n-2}}$$
 
 
+<br><br><br><br><br><br><br><br><br><br><br>
+
+<br><br><br><br><br><br><br>
+
+3) Variances = **.21** and **.22**
+
+
 <br><br>
 
 
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
-5) F Statistic = **32.20**
+4) F Statistic = **32.20**
 
 
 
@@ -930,41 +907,52 @@ $$RSE ( \sigma^2)  \ = \ \sqrt{\frac{\sum (y_i \ - \ \hat{y} )}{n-2}}$$
 <!-- a little more difficult to understand -->
 
 
-$$F Stat \ = \ (\frac{m}{se})^2$$
+$$Linear F Stat \ = \ \frac{MSM}{MSE} = \ (\frac{m}{se})^2 \ = (\frac{.377}{.066})^2$$
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+$$CC_{progress} \ = \ .377 * VA_{progress} - 0.04$$
+
+```{r}
+s_prog
+
+```
+
+
 
 
 
 <br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br>
 
-<br><br><br><br><br><br><br><br><br><br>
+5) Two Sample T-Test
 
-6) Variances = **.21** and **.22**
+<br>
 
-<br><br><br><br><br><br><br><br><br><br><br>
-<br><br><br><br><br><br><br>
+$$t \ = \ \frac{(\bar{X_1} \ - \ \bar{X_2})}{\sqrt{ \frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}$$
 
-7) T-Tests
-
-
+<br>
 
 ```{r}
 
-ttest.df<-data.frame(field="progress", paired="FALSE",TScore=-0.686,df=371.84, pval=0.492)
+ttest.df<-data.frame(field="progress", var.equal = "TRUE", paired="FALSE",TScore=-0.686,df=371.84, pval=0.492)
 
-ttest.df<-rbind(ttest.df, data.frame(field="progress", paired="TRUE",TScore=-0.875,df=186, pval=0.382))
+ttest.df<-rbind(ttest.df, data.frame(field="progress", var.equal = "TRUE", paired="TRUE",TScore=-0.875,df=186, pval=0.382))
 
-ttest.df<-rbind(ttest.df, data.frame(field="2019", paired="FALSE",TScore=-0.137,df=371.88, pval=0.890))
+ttest.df<-rbind(ttest.df, data.frame(field="2019", var.equal = "TRUE", paired="FALSE",TScore=-0.137,df=371.88, pval=0.890))
 
-ttest.df<-rbind(ttest.df, data.frame(field="2019", paired="TRUE",TScore=-0.291,df=186, pval=0.77))
+ttest.df<-rbind(ttest.df, data.frame(field="2019", var.equal = "TRUE", paired="TRUE",TScore=-0.291,df=186, pval=0.77))
 
 
 kable(ttest.df, caption="",row.names = FALSE) %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "float_left", font_size = 16) %>%
   column_spec(1, width = "4em") %>%
   column_spec(2, width = "3em") %>%
-  column_spec(3, width = "4em") %>%
-    column_spec(4, width = "4em") %>%
-  column_spec(5, bold = T, color = "purple", width = "6em")  
+  column_spec(3, width = "3em") %>%
+  column_spec(4, width = "4em") %>%
+    column_spec(5, width = "4em") %>%
+  column_spec(6, bold = T, color = "purple", width = "6em")  
 ```
 
 
@@ -973,10 +961,8 @@ kable(ttest.df, caption="",row.names = FALSE) %>%
 
 
 
-
-
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-
+<br>
 
 <center>
 <h2>Progress 1996-2019: Predictions</h2>
@@ -1002,37 +988,23 @@ kable(some.va, caption="",row.names = FALSE,format="simple", booktabs=TRUE)
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
-<center>
-
-<h2>Question : </h2> *If Voice and Accountability influences Control of Corruption,*
-*wouldnt there be a year or 2 delay to see the response?*
-</center>
-
-
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-<br>
-
-```{r}
-
-# THIS HAS A RSQUARED OF .007 WHICH MEANS THE RELATIONSHIP IS VERY WEAK
-
-# FOR EVERY COUNTRY HOW CORRELATED IS THEIR ACCOUNTABILITY PROGRESS FROM 96-08 to 08-19 , 04-00 and 00-96
-
-# SEVERAL VARIATIONS WERE TRIED, AND THE RESULTS WERE THE SAME
-
-
-ggplot(data = wgi_cc_va.df, aes(x = va_progress1H, y = cc_progress2H)) +
-geom_jitter() +
-geom_smooth(method = "lm") +
-xlab("Accountability Progress From 1996-2000")  +
-ylab("Corruption Progress From 2000-2004")
-
-
-
-```
 <!--  IN CONCLUSION -->
 
 <!-- both are scale and scope questions, both are conversation starters -->
+
+# Conclusion
+
+<br><br>
+
+<h4>&emsp; &emsp; &emsp;  1) Despite anecdotal evidence, the theory of synergy groups is not established.</h4>
+
+<br>
+
+ <h4>&emsp; &emsp; &emsp; 2) The positive correlation between Accountability and Corruption exists but its not strong.</h4>
+
+<br>
+
+<h4> &emsp; &emsp; &emsp;  3) Both postulates are better supported by the overall score than by the progress.</h4>
 
 
 <br><br><br><br><br><br><br><br>
