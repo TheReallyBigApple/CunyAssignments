@@ -1,0 +1,434 @@
+---
+title: 'Inference for numerical data'
+author: ""
+output:
+  pdf_document: default
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(eval = TRUE, results = TRUE, fig.show ="show", message = FALSE, warning = FALSE)
+```
+
+
+
+```{r load-packages, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(openintro)
+library(infer)
+```
+
+
+### The data
+
+Every two years, the Centers for Disease Control and Prevention conduct the Youth
+Risk Behavior Surveillance System (YRBSS) survey, where it takes data from high 
+schoolers (9th through 12th grade), to analyze health patterns. 
+
+```{r load-data}
+data(yrbss)
+```
+
+There are observations on 13 different variables, some categorical and some 
+numerical. The meaning of each variable can be found by bringing up the help file:
+
+```{r help-nc, eval=FALSE}
+?yrbss     # A data frame with 13583 observations on the following 13 variables
+View(yrbss)
+glimpse(yrbss)
+```
+
+
+1.  What are the cases in this data set? How many cases are there in our sample?
+
+\textcolor{blue}{13585 students in ages 12-18, although mostly older than 14}
+
+\textcolor{blue}{The count() and table() functions also are useful to get an overview of the data}
+
+
+```{r str}
+
+
+yrbss %>% count(race)
+yrbss %>% count(text_while_driving_30d)
+
+table(yrbss[c("gender","age")])
+
+```
+
+## Exploratory data analysis
+
+
+Using visualization and summary statistics, describe the distribution of weights.
+
+\textcolor{blue}{Fairly normal}
+
+\textcolor{blue}{There are some extremes on both tails. (1 KG = 2.2 pounds)}
+
+\textcolor{blue}{and to explore that i used quantile() to see where the bottom and top 5\% are.}
+
+```{r summary}
+summary(yrbss$weight)
+
+quantile(yrbss$weight,.95, na.rm=TRUE)
+quantile(yrbss$weight,.05, na.rm=TRUE)
+```
+
+1.  How many observations are we missing weights from?
+
+\textcolor{blue}{1004}
+
+
+Next, consider the possible relationship between a high schooler's weight and their
+physical activity. Plotting the data is a useful first step because it helps 
+us quickly visualize trends, identify strong associations, and develop research
+questions.
+
+First, let's create a new variable `physical_3plus`, which will be coded as either
+"yes" if they are physically active for at least 3 days a week, and "no" if not.
+
+```{r create new var}
+yrbss <- yrbss %>% 
+  mutate(physical_3plus = ifelse(yrbss$physically_active_7d > 2, "yes", "no"))
+
+# glimpse(yrbss)
+```
+
+
+1.  Make a side-by-side boxplot of `physical_3plus` and `weight`. Is there a 
+relationship between these two variables? What did you expect and why?
+```{r}
+
+boxplot(yrbss$weight ~ yrbss$physical_3plus)
+
+
+```
+
+\textcolor{blue}{Those who exercise seem to weigh a little more.}
+
+\textcolor{blue}{A little surprising but not totally. The exercise may result in some weight loss. But Weight Lifters may weigh more.}
+
+\textcolor{blue}{Im thinking if the same study was done on a different age group, the results might be different.}
+
+The box plots show how the medians of the two distributions compare, but we can
+also compare the means of the distributions using the following to 
+first group the data by the `physical_3plus` variable, and then calculate the mean
+`weight` in these groups using the `mean` function while ignoring missing values
+by setting the `na.rm` argument to `TRUE`.
+
+```{r by-means}
+yrbss %>%
+  group_by(physical_3plus) %>%
+  summarise(mean_weight = mean(weight, na.rm = TRUE))
+```
+
+There is an observed difference, but is this difference statistically 
+significant? In order to answer this question we will conduct a hypothesis test.
+
+## Inference
+
+1.  Are all conditions necessary for inference satisfied? Comment on each. You can 
+compute the group sizes with the `summarize` command above by defining a new variable
+with the definition `n()`.
+
+```{r}
+yrbss %>%
+  group_by(physical_3plus) %>%
+  summarise(observations = n(),mean_weight = mean(weight, na.rm = TRUE))
+
+```
+
+\textcolor{blue}{When dealing with a comparison between groups, the normality check should include the independence *extended* check.}
+
+\textcolor{blue}{We might consider whether organized sports creates an important influence on the yes group but I doubt it effects our normality requirement.}
+
+\textcolor{blue}{Sample sizes are over 30 with no extreme outliers.}
+
+
+
+
+1.  Write the hypotheses for testing if the average weights are different for those
+who exercise at least times a week and those who don't.
+
+$$H_0 \ : \bar{w}_{yes} = \bar{w}_{no} $$
+
+$$H_A \ : \bar{w}_{yes} <> \bar{w}_{no} $$
+
+
+
+Next, we will introduce a new function, `hypothesize`, that falls into the `infer` 
+workflow. You will use this method for conducting hypothesis tests. 
+
+But first, we need to initialize the test, which we will save as `obs_diff`.
+
+```{r inf-weight-habit-ht-initial, tidy=FALSE, warning = FALSE}
+obs_diff <- yrbss %>%
+  specify(weight ~ physical_3plus) %>%    # creates a 2 column table of quantile of weight and category of yes/no
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+# obs_diff = 1.77 which we knew
+
+```
+
+Notice how you can use the functions `specify` and `calculate` again like you did
+for calculating confidence intervals. Here, though, the statistic you are searching
+for is the difference in means, with the order being `yes - no != 0`.
+
+After you have initialized the test, you need to simulate the test on the null
+distribution, which we will save as `null`.
+
+```{r inf-weight-habit-ht-null, tidy=FALSE, warning = FALSE}
+null_dist <- yrbss %>%
+  specify(weight ~ physical_3plus) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+# quantile(yrbss$weight, c(0.25, 0.75), na.rm = TRUE)
+# View(null_dist)
+# vignette("infer")
+
+```
+
+Here, `hypothesize` is used to set the null hypothesis as a test for independence.
+In one sample cases, the `null` argument can be set to "point" to test a hypothesis
+relative to a point estimate.
+
+Also, note that the `type` argument within `generate` is set to `permute`, which 
+is the argument when generating a null distribution for a hypothesis test.
+
+We can visualize this null distribution with the following code:
+
+```{r}
+ggplot(data = null_dist, aes(x = stat)) +
+  geom_histogram()
+```
+
+
+1. How many of these `null` permutations have a difference of at least `obs_stat`?
+
+```{r}
+gt_obs_stat<-nrow(subset(null_dist, abs(stat)>obs_diff))
+
+sprintf("The generated distribution has %d differences greater than %.4f", gt_obs_stat,obs_diff)
+
+```
+
+\textcolor{blue}{Apparently the null distribution ranges from -1.04 to 1.02 so we would reject the null hypothesis.}
+
+\textcolor{blue}{Im not clear how the infer code knew what the standard deviation should be since the actual range of weights is much higher.}
+
+
+
+Now that the test is initialized and the null distribution formed, you can calculate
+the p-value for your hypothesis test using the function `get_p_value`.
+
+```{r inf-weight-habit-ht-pvalue}
+null_dist %>%
+  get_p_value(obs_stat = obs_diff, direction = "two_sided")
+```
+
+This the standard workflow for performing hypothesis tests.
+
+1.  Construct and record a confidence interval for the difference between the 
+weights of those who exercise at least three times a week and those who don't, and
+interpret this interval in context of the data.
+
+```{r}
+s_1<-subset(yrbss,physical_3plus=="yes")["weight"]
+s_2<-subset(yrbss,physical_3plus=="no")["weight"]
+
+sd1<-sd(s_1$weight, na.rm=TRUE)
+sd2<-sd(s_2$weight, na.rm=TRUE)
+n1<-nrow(s_1)
+n2<-nrow(s_2)
+
+se<-sqrt(sd1^2/n1 + sd2^2/n2)
+
+# validating...
+# mean(s_1$weight, na.rm=TRUE) - mean(s_2$weight, na.rm=TRUE)
+
+z_score<-qnorm(.95)        #  The z score of 90% (1.90/2) is 1.645
+moe<-z_score*se
+
+sprintf("The 90%s Confidence Interval is between %.2f and %.2f ", '%', obs_diff - moe, obs_diff+moe)
+
+```
+
+\textcolor{blue}{If we were to continually perform similar studies, and respecting the first study as our best data.}
+
+\textcolor{blue}{then 90 percent of those studies would result between  -0.06 and 3.61 (where -0.06 means the non exercisers would weigh more).}
+
+* * *
+
+## More Practice
+
+1.  Calculate a 95% confidence interval for the average height in meters (`height`)
+and interpret it in context.
+
+```{r}
+sigma<-sd(yrbss$height,na.rm = TRUE)
+mu<-mean(yrbss$height,na.rm = TRUE)
+
+n <- yrbss %>%
+  drop_na(height) %>%
+    summarise(n())
+    
+
+se<-sigma/sqrt(n)
+
+z_score<-qnorm(.975)        #  The z score of 95 (1.95/2) is 1.96
+
+moe<-z_score*se
+
+sprintf("The 95%s Confidence Interval is between %.6f and %.6f ", '%', mu - moe, mu+moe)
+
+
+
+
+
+```
+
+\textcolor{blue}{With 12000 observations there is not much standard error.}
+
+
+
+2.  Calculate a new confidence interval for the same parameter at the 90% 
+confidence level. Comment on the width of this interval versus 
+the one obtained in the previous exercise.
+
+
+```{r}
+
+z_score<-qnorm(.95)        #  The z score of 90% (1.9/2) is 1.645
+
+moe<-z_score*se
+
+sprintf("The 90%s Confidence Interval is between %.6f and %.6f ", '%', mu - moe, mu+moe)
+
+```
+
+
+\textcolor{blue}{By being less confident we are restricting the interval of possible values.}
+
+
+
+
+
+3.  Conduct a hypothesis test evaluating whether the average height is different
+for those who exercise at least three times a week and those who don't.
+
+```{r}
+s_1<-subset(yrbss,physical_3plus=="yes")["height"]
+s_2<-subset(yrbss,physical_3plus=="no")["height"]
+
+mu1<-mean(s_1$height, na.rm=TRUE)
+mu2<-mean(s_2$height, na.rm=TRUE)
+
+obs_diff<-mu1-mu2
+h0_diff<-0
+
+sd1<-sd(s_1$height, na.rm=TRUE)
+sd2<-sd(s_2$height, na.rm=TRUE)
+n1<-nrow(s_1)
+n2<-nrow(s_2)
+
+se<-sqrt(sd1^2/n1 + sd2^2/n2)
+
+t_score<-obs_diff-h0_diff/se
+df=min(n1-1,n2-1)
+
+p_value<-pt(t_score, df=df, lower.tail=FALSE)
+
+
+sprintf("The p-value is %.2f ",  p_value)
+
+
+
+
+```
+
+\textcolor{blue}{We can not reject the null hypothesis.}
+
+
+4.  Now, a non-inference task: Determine the number of different options there 
+are in the dataset for the `hours_tv_per_school_day` there are.
+
+```{r}
+
+yrbss %>%
+  group_by(hours_tv_per_school_day) %>%
+    summarise(n())
+
+```
+
+
+
+5. Come up with a research question evaluating the relationship between height 
+or weight and sleep. Formulate the question in a way that it can be answered using
+a hypothesis test and/or a confidence interval. Report the statistical results, 
+and also provide an explanation in plain language. Be sure to check all 
+assumptions, state your $\alpha$ level, and conclude in context.
+
+
+\textcolor{blue}{Does sleep effect either height or weight? Well use 95% Confidence Level.}
+
+```{r}
+
+
+new_yrbss <- yrbss %>%
+  drop_na(height) %>%
+  drop_na(weight) %>%
+  drop_na(school_night_hours_sleep)
+
+
+
+res.aov <- aov(weight ~ school_night_hours_sleep, data = new_yrbss)    
+summary(res.aov)
+
+res.aov <- aov(height ~ school_night_hours_sleep, data = new_yrbss)    
+summary(res.aov)
+
+
+new_yrbss %>%
+  group_by(school_night_hours_sleep) %>%
+    summarise(obs=n(),mu_h=mean(height),mu_w=mean(weight))
+
+
+mu_yrbss <- select(new_yrbss, c("school_night_hours_sleep","height","weight")) %>%
+  group_by(school_night_hours_sleep) %>%
+    summarise(obs=n(),mu_h=mean(height),mu_w=mean(weight))
+
+new_mu_yrbss <- select(mu_yrbss, c("mu_h","mu_w"))
+
+chisq.test(new_mu_yrbss)
+
+
+```
+
+\textcolor{blue}{The aov function is designed to return a pvalue that is high if there is variance between the means between groups.}
+
+\textcolor{blue}{It displayed a p-value for heights as .0186 and for weights, esentially 0.}
+
+\textcolor{blue}{Neither exceeds my alpha of .05 so I conclude that sleep does not effect height or weight.}
+
+\textcolor{blue}{The chi squared function is designed to analyze if the row/column distribution equals the row/column value.}
+
+\textcolor{blue}{Im not sure if chisq.test worked as expected. I would think the p-value would be close to 0 not 1.} 
+
+\textcolor{blue}{Clearly average height doesnt change across sleep groups. Casual observation of the deviation in weight is that its small as well.}
+
+
+
+
+
+* * *

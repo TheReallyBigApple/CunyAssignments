@@ -240,31 +240,75 @@ based on whether they are nonfiction or fiction and hardcover or paperback.
 column_revenue <- c(rep(0, 54), rep(25,34), rep(60,12))
 
 #calculate the expected revenuep per person
-expected_revenue<-sum(column_revenue)/100
+expected_revenue<-sum(column_revenue)/length(column_revenue)
 
-sprintf("The expected revenue per person is %.3f", expected_revenue)
+# same as (( 0 * .54 ) + ( 25 * .34 ) + ( 60 * .12 ))
+# variance ? (0^2 * .54) + (25^2 * .34) + (60^2 * .12)
+
+sprintf("The expected revenue ( or mean ) per person is %.3f", expected_revenue)
 
 
-sprintf("The standard deviation is %.3f", sd(column_revenue))         # is this right ?
 
 
+var_recalc = sum( (((column_revenue - expected_revenue)^2)/length(column_revenue))  )
+
+val_count = length(column_revenue)
+
+var_recalc=0
+
+for (n in 1:val_count)
+{
+  md = column_revenue[n]-expected_revenue
+  md_sq<-md^2
+
+     # be careful you divide first, then add  
+  var_recalc=var_recalc+(md_sq/(val_count-1))
+}
+
+sd_recalc=sqrt(var_recalc)
+
+
+sprintf("The standard deviation, calculated manually, is %.3f", sd_recalc) 
+
+sprintf("The standard deviation, using sd(), is %.3f", sd(column_revenue))  
 
 ```
 
 
 (b) About how much revenue should the airline expect for a flight of 120 passengers? With what standard deviation? Note any assumptions you make and if you think they are justified.
 
->*The expected revenue for 120 passengers is 15.7 X 120 = 1884.*
+*I tried a few different methods. I settled on the brute force method of prorating the original probabilites X 120.*
 
-
-
-
->*Im not sure how to respond to the standard deviation deviation question. The sample function is an option to monitor a normal variance on these inputs.*
 ```{r}
-sample(column_revenue, size = 100, replace = TRUE)
+
+
+# original variance was 402
+
+expected_revenue_120=expected_revenue * 120
+sprintf("The total revenue expected for 120 passengers is $%.2f", expected_revenue_120)  
+
+prorated_0bag = 120 * .54 * 100
+prorated_1bag = 120 * .34 * 100
+prorated_2bag = 120 * .12 * 100
+
+
+# calculate variance from the linear equation ? doesnt seem to work
+# var_recalc<-(25^2 * prorated_1bag) + (60^2 * prorated_2bag )
+
+
+# given 120 passengers
+# 64.8 will pay 0
+# 40.8 will pay 25
+# 14.4 will pay 60
+
+
+prorated_to_120 <- c(rep(0, prorated_0bag), rep(25,prorated_1bag), rep(60,prorated_2bag))
+
+var(prorated_to_120) # s.b something a little smaller than 402
+sprintf("The standard deviation, roughly prorating the quantities to 120, is %.3f", sd(prorated_to_120))  
+
+
 ```
-
-
 
 
 
@@ -317,7 +361,7 @@ make less than $50,000 per year. Use this value to determine whether or not the 
 
 >*The percentage of the total population that is female and makes less than 50,000 is*
 
-\[ 0.41 *  0.71 = .29 \]
+\[ 0.41 *  0.718 = .29 \]
 
 
 
