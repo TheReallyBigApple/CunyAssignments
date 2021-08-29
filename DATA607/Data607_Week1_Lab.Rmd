@@ -1,0 +1,109 @@
+---
+title: "Data_607_Week1_Lab"
+author: "Tom Buonora"
+date: "August 29, 2021"
+output: html_document
+---
+
+
+
+<style type="text/css">
+body {
+font-size: 18px;
+color: black;
+}
+h1 {
+  font-size: 32px;
+  color: maroon;
+}
+h2 {
+  font-size: 24px;
+  color: black;
+}
+</style>
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE,message = FALSE )
+```
+
+
+<br><br><br>
+
+
+<h1><center>Pittsburghs Rivers </center></h1>
+<br><br><br><br>
+
+<h2>This lab uses dplyr pipe construct to display the average length of bridges that cross each of Pittsburgh's 3 big rivers.</h2>
+
+
+<br><br><br>
+
+
+```{r import}
+library(dplyr)
+```
+
+
+
+
+<br><br>
+<h2>Get Data</h2>
+<br><br>
+
+
+```{r get data and name columns}
+
+bridges <- read.table("https://archive.ics.uci.edu/ml/machine-learning-databases/bridges/bridges.data.version1", h = F, sep = ",")
+
+names(bridges)<-c("ident","river","location","erected","purpose", "length", "lanes","clear","t-or-d", "material", "span", "rel", "type")
+
+
+```
+
+
+
+
+<br><br>
+<h2>Filter and Summarize</h2>
+<br><br>
+
+
+```{r filter_and_summarize}
+
+
+
+# Convert char to numeric
+bridges$length<-as.numeric(bridges$length)
+
+
+# filter out records with no length
+# filter out if its not one of the 3 rivers
+
+output<-bridges %>%
+  filter(length != "?")  %>%
+  filter(river =="O" | river == "M" || river == "A")  %>%
+  mutate(river = ifelse(river == "M", "Monongahela",  ifelse(river == "A", "Allegheny", "Ohio"))) %>%
+  mutate(length=as.numeric(length)) %>%
+  group_by(river) %>%
+  summarize(average_length =  mean(length), total_bridges=n())
+
+```
+
+
+
+
+<br><br>
+<h2>Output results</h2>
+<br><br>
+
+
+```{r output_results}
+
+options(digits = 1)
+
+knitr::kable(output, caption='Bridges over the Three Rivers in Pittsburgh')
+
+```
+

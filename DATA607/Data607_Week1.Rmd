@@ -1,0 +1,202 @@
+---
+title: "Data607_Week1"
+author: "Tom Buonora"
+date: "August 28, 2021"
+output: html_document
+    
+---
+
+
+
+<style type="text/css">
+body {
+font-size: 18px;
+color: black;
+}
+h1 {
+  font-size: 32px;
+  color: maroon;
+}
+h2 {
+  font-size: 24px;
+  color: black;
+}
+</style>
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+<br><br>
+
+<h1><center>New York, New York : A Tale of two Teams </center></h1>
+<br><br><br><br>
+
+<h2>On July 24th, the talk of the baseball world was how the New York Mets were a big success while the Yankees were closer to last place than first</h2>
+
+<br><br>
+
+Team     |    Division Race |   Record  | Playoff Chances 
+-------  | ---------------- | ----------| --------------- 
+ Mets    |    1st Place     |    51-43  |     63%
+Yankees  |    3rd Place     |    50-44  |     35%
+
+
+
+
+
+
+
+
+<br><br><br><br>
+<h2>40 days later, the Mets odds of a post season appearance plunged to 1%. The Yankees chances jumped to 98%.</h2>
+<br><br>
+
+Team     |    Division Race |   Record  | Playoff Chances 
+-------  | ---------------- | ----------| --------------- 
+ Mets    |    3rd Place     |    61-67  |     1%
+Yankees  |    2nd Place     |    76-52  |     98%
+
+
+
+
+<br><br><br><br>
+
+Lets examine what happened by looking at the daily change in ELO scores with each game. 
+
+In this excercise, we will stick with Base R.
+
+<br><br><br><br>
+
+1. Retrieve data from fivethirtyeight.com
+
+```{r getURL}
+
+mlb_elo <-read.csv("https://projects.fivethirtyeight.com/mlb-api/mlb_elo.csv")
+
+
+```
+
+<br><br>
+2. Isolate the mets and yankees in the past month
+<br><br>
+
+```{r}
+
+
+mlb_elo_2 <- subset(mlb_elo,(team1=="NYM" | team2=="NYM" | team1=="NYY" | team2=="NYY" ) & date < "2021-08-28" & date > "2021-07-28" )[c("date","team1", "team2", "elo1_post" ,"elo2_post","score1", "score2" )]
+
+
+```
+
+<br><br>
+3. Rearrange the data into 2 tables to make it more readable i.e. the Mets table would look like
+<br><br>
+
+
+Date               | Opponent |  Outcome      |   ELO Rating
+------------------ | -------  | ------------- | ------------- 
+2021-08-27         | WSN      |    L          |   1490.045
+2021-08-26         | SFG      |    L          |   1491.586
+
+
+<br><br>
+
+```{r mets}
+
+
+mets_away <- subset(mlb_elo_2,team1=="NYM")[c("date", "team2", "elo1_post", "score1", "score2" )]
+names(mets_away)<-c("date", "opponent", "elo", "score_Mets", "score_Opponent" )
+mets_away$outcome  <- ifelse(mets_away$score_Mets > mets_away$score_Opponent, "W", "L")
+mets_away$loc="A"
+
+
+
+
+mets_home <- subset(mlb_elo_2,team2=="NYM")[c("date", "team1", "elo2_post", "score2", "score1" )]
+names(mets_home)<-c("date", "opponent", "elo", "score_Mets", "score_Opponent" )
+mets_home$outcome  <- ifelse(mets_home$score_Mets > mets_home$score_Opponent, "W", "L")
+mets_home$loc="H"
+
+
+mets<-rbind(mets_away, mets_home)
+
+   # sort by date and apply a reverse index
+mets<-mets[order(mets$date, decreasing =FALSE), ] 
+rownames(mets)<-seq(28:1)
+
+
+knitr::kable(mets, caption='Mets : What Happened in the past Month ??')
+
+```
+<br><br>
+
+4. Do the same for the Yankees
+<br><br>
+
+
+```{r yankees}
+
+
+yankees_away <- subset(mlb_elo_2,team1=="NYY")[c("date", "team2", "elo1_post", "score1", "score2" )]
+names(yankees_away)<-c("date", "opponent", "elo", "score_Yankees", "score_Opponent" )
+yankees_away$outcome  <- ifelse(yankees_away$score_Yankees > yankees_away$score_Opponent, "W", "L")
+yankees_away$loc="A"
+
+
+
+
+yankees_home <- subset(mlb_elo_2,team2=="NYY")[c("date", "team1", "elo2_post", "score2", "score1" )]
+names(yankees_home)<-c("date", "opponent", "elo", "score_Yankees", "score_Opponent" )
+yankees_home$outcome  <- ifelse(yankees_home$score_Yankees > yankees_home$score_Opponent, "W", "L")
+yankees_home$loc="H"
+
+
+yankees<-rbind(yankees_away, yankees_home)
+yankees<-yankees[order(yankees$date, decreasing = FALSE), ] 
+
+rownames(yankees)<-seq(28:1)
+
+
+knitr::kable(yankees, caption='Yankees : What Happened in the past Month ??')
+
+```
+
+<br><br>
+
+5. Now plot the progression of the elo scores.
+
+<br><br>
+
+```{r plot_elo}
+
+# set the y limit to the lowest and highest ELO score
+
+plot(yankees$elo, type="l", ylab="ELO", xlab="Day", col="blue", ylim=c(1488,1560), main="ELO : One Month in New York Baseball")   
+lines(mets$elo, col="red", lty=1)
+legend("topleft", legend=c("Mets", "Yankees"), col=c("red", "blue"), lty=1, cex=0.8,text.font=4, bg='lightblue')
+
+```
+
+
+<br><br>
+
+# Conclusion
+
+<br><br>
+
+<h2>Both teams now have a record that conforms to preseason expectations so we can use the law of large numbers to explain the change</h2>
+
+<br><br>
+
+<h2>The Mets recent record can be explained in part to the loss of their best pitcher plus a brutal road trip against some very good teams</h2>
+
+<br><br>
+<h2>The Yankees on the other hand, as evidenced by a profound improvement in their ELO score simply got hot and are currently playing at a high level<h2>
+
+<br><br>
+
