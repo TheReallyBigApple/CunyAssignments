@@ -62,15 +62,15 @@ library(tidyr)
 
   Description       | DB Table  | CSV File
 -----------------   | --------  | ---------------
-6 movies            | movies    | [607_Movies.csv](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)     
-5 people            | people    | [607_People.csv](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
-Movie,Person,Rating | ratings   | [607_Ratings.csv](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
+6 movies            | movies    | [607_Movies.csv](https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/607_Movies.csv)     
+5 people            | people    | [607_People.csv](https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/607_People.csv)
+Movie,Person,Rating | ratings   | [607_Ratings.csv](https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/607_Ratings.csv)
  
 
 
 <br><br>
 
-Click [here](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)  to see the database code.
+Click [here](https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/607_week2.sql)  to see the database code.
 
 
     
@@ -283,6 +283,6 @@ dbDisconnect(conn)
 ```
 
 
-The same code was done in Python. Please see [here](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
+The same code was done in Python. Please see [here](https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/Data607_Week2.ipynb)
 
 
