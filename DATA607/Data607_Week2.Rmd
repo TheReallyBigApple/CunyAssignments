@@ -22,27 +22,11 @@ h2 {
 </style>
 
 
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
-```
-
-
-
-```{r}
-
-library(RMySQL)
-library(dplyr)
-library(kableExtra)
-library(knitr)
-library(tidyr)
-```
-
-
 <br><br>
 
 <h1><center>Movie Ratings : Friends vs. IMDB </center></h1>
 <br><br><br>
+
 
 
 <br><br>
@@ -52,11 +36,31 @@ library(tidyr)
 
 <h2>The question is how do our friends ratings compare to IMDB. </h2>
 
+
+<br><br>
+
+```{r knitr_options}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+```
+
+
+
+```{r libraries}
+
+library(RMySQL)
+library(dplyr)
+library(kableExtra)
+library(knitr)
+library(tidyr)
+```
+
+
+
+
+<br><br>
+
+
 <h2>The schema is normalized across 3 tables as follow. Click on link to see the csv data </h2>
-
-
-
-
 <br><br>
 
 
@@ -143,7 +147,7 @@ phead<-head(people, n=3)
 Movies and People tables :
 <br><br>
 
-```{r echo = FALSE}
+```{r }
 
 t1 <- kable(mhead, format = "latex", booktabs = TRUE)
 t2 <- kable(phead, format = "latex", booktabs = TRUE)

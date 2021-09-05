@@ -607,11 +607,6 @@ h2 {
   color: black;
 }
 </style>
-<pre class="r"><code>library(RMySQL)
-library(dplyr)
-library(kableExtra)
-library(knitr)
-library(tidyr)</code></pre>
 <p><br><br></p>
 <h1>
 <center>
@@ -626,6 +621,14 @@ This exercise queries a small dataset from MySQL to look at how 5 friends rated 
 <h2>
 The question is how do our friends ratings compare to IMDB.
 </h2>
+<p><br><br></p>
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)</code></pre>
+<pre class="r"><code>library(RMySQL)
+library(dplyr)
+library(kableExtra)
+library(knitr)
+library(tidyr)</code></pre>
+<p><br><br></p>
 <h2>
 The schema is normalized across 3 tables as follow. Click on link to see the csv data
 </h2>
@@ -697,6 +700,11 @@ ratings = fetch(rs, n=-1)
 mhead&lt;-head(movies, n=3)
 phead&lt;-head(people, n=3)</code></pre>
 <p><br><br> Movies and People tables : <br><br></p>
+<pre class="r"><code>t1 &lt;- kable(mhead, format = &quot;latex&quot;, booktabs = TRUE)
+t2 &lt;- kable(phead, format = &quot;latex&quot;, booktabs = TRUE)
+
+kable(phead, caption = &#39;People&#39;) %&gt;%
+  kable_styling(full_width = FALSE, position = &quot;float_left&quot;)</code></pre>
 <table class="table" style="width: auto !important; float: left; margin-right: 10px;">
 <caption>
 People
@@ -738,6 +746,8 @@ Mom
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>kable(mhead, caption = &#39;Movies&#39;) %&gt;%
+  kable_styling(full_width = FALSE, position = &quot;right&quot;)</code></pre>
 <table class="table" style="width: auto !important; margin-right: 0; margin-left: auto">
 <caption>
 Movies
