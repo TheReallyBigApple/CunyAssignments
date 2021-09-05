@@ -286,7 +286,8 @@ dbDisconnect(conn)
 
 ```
 
+Please see [here](https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/Data607_Week2.Rmd) to view the RMD file.
 
-The same code was done in Python. Please see [here](https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/Data607_Week2.ipynb)
+The same code was done in Python. Please see [here](https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/Data607_Week2.ipynb) and click the View in Colab button.
 
 
