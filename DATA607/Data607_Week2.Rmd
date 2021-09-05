@@ -1,0 +1,288 @@
+---
+title: "Data607_Week2"
+author: "Tom Buonora"
+date: "September 4, 2021"
+output: html_document
+---
+
+
+<style type="text/css">
+body {
+font-size: 18px;
+color: black;
+}
+h1 {
+  font-size: 32px;
+  color: maroon;
+}
+h2 {
+  font-size: 24px;
+  color: black;
+}
+</style>
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+```
+
+
+
+```{r}
+
+library(RMySQL)
+library(dplyr)
+library(kableExtra)
+library(knitr)
+library(tidyr)
+```
+
+
+<br><br>
+
+<h1><center>Movie Ratings : Friends vs. IMDB </center></h1>
+<br><br><br>
+
+
+<br><br>
+
+
+<h2>This exercise queries a small dataset from MySQL to look at how 5 friends rated 6 movies. </h2>
+
+<h2>The question is how do our friends ratings compare to IMDB. </h2>
+
+<h2>The schema is normalized across 3 tables as follow. Click on link to see the csv data </h2>
+
+
+
+
+<br><br>
+
+
+  Description       | DB Table  | CSV File
+-----------------   | --------  | ---------------
+6 movies            | movies    | [607_Movies.csv](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)     
+5 people            | people    | [607_People.csv](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
+Movie,Person,Rating | ratings   | [607_Ratings.csv](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
+ 
+
+
+<br><br>
+
+Click [here](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)  to see the database code.
+
+
+    
+The ratings file has 30 entries but some of my friends havent seen the movie yet so they have a blank rating.
+
+We will handle those in the R code.
+    
+
+<br><br>
+
+1) Get password from the environment
+
+<br><br>
+
+```{r}
+
+db_password <- Sys.getenv("DATA607_PASSWORD")
+```
+
+
+<br><br>
+
+
+
+2) Connect to database
+
+
+<br><br>
+
+```{r}
+
+
+conn = dbConnect(MySQL(), dbname='DATA607',  user='root', password=db_password, host='localhost')
+
+
+```
+
+
+
+3) Query the people and movies and ratings tables and show the schema.
+
+```{r}
+
+qry<-"select * from movies;"
+
+rs = dbSendQuery(conn, qry)
+
+  # when n= -1 it means select all rows
+movies = fetch(rs, n=-1)
+
+qry<-"select * from people;"
+
+rs = dbSendQuery(conn, qry)
+
+people = fetch(rs, n=-1)
+
+qry<-"select * from ratings;"
+
+rs = dbSendQuery(conn, qry)
+
+ratings = fetch(rs, n=-1)
+
+mhead<-head(movies, n=3)
+phead<-head(people, n=3)
+
+
+```
+
+<br><br>
+Movies and People tables :
+<br><br>
+
+```{r echo = FALSE}
+
+t1 <- kable(mhead, format = "latex", booktabs = TRUE)
+t2 <- kable(phead, format = "latex", booktabs = TRUE)
+
+kable(phead, caption = 'People') %>%
+  kable_styling(full_width = FALSE, position = "float_left")
+
+kable(mhead, caption = 'Movies') %>%
+  kable_styling(full_width = FALSE, position = "right")
+```
+
+
+
+
+```{r echo = FALSE, eval=FALSE}
+
+# save this code
+# note:   align = 'clc' means align 3 columns center,left,center
+
+mhead %>%
+  kable("html", caption = 'Movies') %>%
+    kable_styling(full_width = F, position = "float_left")
+phead %>%
+  kable("html", caption = 'People') %>%
+    kable_styling(full_width = F, position = "center")
+
+```
+
+
+<br><br>
+The Ratings table : 
+
+<br><br>
+
+```{r}
+
+knitr::kable(head(ratings), caption='Ratings', table.attr = "style='width:80%;'")
+
+
+
+```
+
+
+<br><br>
+
+Note we could just run a query like
+  select p.name, m.name, r.rating from ratings r, people p, movies m 
+    where r.people_id=p.id and r.movie_id=m.id and rating is not null;
+    
+<br><br>
+
+But we want to practice some R so lets work with dataframes.
+
+<br><br>
+
+1) Remove the records with no rating
+
+<br><br>
+
+```{r}
+
+n_unrated<-nrow(ratings[is.na(ratings$rating),])
+
+
+sprintf("%d records with no rating will be removed", n_unrated)
+
+ratings<- ratings %>%
+  drop_na(rating) 
+
+
+```
+
+<br><br>
+
+2) Remove the carriage return characters
+
+<br><br>
+
+```{r}
+
+people$name<-trimws(people$name, "right")
+movies$lead_actor<-trimws(movies$lead_actor, "right")
+```
+
+<br><br>
+
+3) Combine the 3 dataframes to 1
+<br><br>
+
+```{r}
+
+ratings2<-merge(people, ratings, by.x ="id", by.y = "people_id")
+ratings3<-merge(movies, ratings2, by.x ="id", by.y = "movie_id")
+
+```
+
+
+<br><br>
+
+4)  Clean up the columns.
+<br><br>
+
+```{r}
+
+ratings4<-ratings3 %>%
+    select(c("name.y", "name.x", "rating", "imdb_rating","rating"))
+
+
+colnames(ratings4)<-c("Friend", "Movie", "Rating", "IMDB")
+```
+
+
+
+<br><br>
+
+5)  Now answer the question.
+<br><br>
+
+
+```{r}
+
+answer<-ratings4 %>%
+  group_by(Movie) %>%
+  summarize(n_ratings = n(), avg_rating=mean(Rating),IMDB=max(IMDB))
+
+knitr::kable(answer, caption='Friends vs IMDB', digits=1, table.attr = "style='width:80%;'")
+
+```
+
+
+
+```{r}
+
+dbDisconnect(conn)
+
+
+```
+
+
+The same code was done in Python. Please see [here](https://rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
+
+
