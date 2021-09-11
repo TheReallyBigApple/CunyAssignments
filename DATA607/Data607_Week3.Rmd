@@ -166,7 +166,7 @@ Start and end with the same character.
 ```{r start_and_end}
 
 str<-c("BAZAZZA", "OBAZZABOO", "Z4Z5Z6za", "abbba","...","XaXxXaaaXaXxa")
-str_view(str,"^(.)\\1$")
+str_view(str,"^(.).*\\1$")
 
 ```
 
@@ -175,10 +175,10 @@ str_view(str,"^(.)\\1$")
 
 Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
 <br><br>
-```{r}
-str<-c("BBAAAX", "bBaAAxx", "zzza", "aaaa","...","church")
+```{r repeated_pair}
+str<-c("BBAAABBX", "bBaAAxx", "zzza", "aaaa","church")
 
-str_view(str,"(.).*\\1")
+str_view(str,"(..).*\\1")
 ```
 
 <br><br>
@@ -189,8 +189,8 @@ Contain one letter repeated in at least three places (e.g. "eleven" contains thr
 
 
 
-```{r}
-str<-c("BBAAAX", "bBaAAxx", "zzza", "aaaNOa","eleven","church")
+```{r three_places}
+str<-c("BANANA", "bBaAAxx", "zzza", "aaNOa","eleven","church")
 
 str_view(str,"(.).*\\1.*\\1")
 ```

@@ -1314,8 +1314,8 @@ data_file &lt;- &quot;https://raw.githubusercontent.com/fivethirtyeight/data/mas
 majors&lt;-read.csv(data_file)
 
 str_view(majors$Major, &quot;DATA|STATISTICS&quot;, match=TRUE)</code></pre>
-<div id="htmlwidget-0c8155d41766c9ac4071" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-0c8155d41766c9ac4071">{"x":{"html":"<ul>\n  <li>MANAGEMENT INFORMATION SYSTEMS AND <span class='match'>STATISTICS<\/span><\/li>\n  <li>COMPUTER PROGRAMMING AND <span class='match'>DATA<\/span> PROCESSING<\/li>\n  <li><span class='match'>STATISTICS<\/span> AND DECISION SCIENCE<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-faebafbeaf787db92e1c" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-faebafbeaf787db92e1c">{"x":{"html":"<ul>\n  <li>MANAGEMENT INFORMATION SYSTEMS AND <span class='match'>STATISTICS<\/span><\/li>\n  <li>COMPUTER PROGRAMMING AND <span class='match'>DATA<\/span> PROCESSING<\/li>\n  <li><span class='match'>STATISTICS<\/span> AND DECISION SCIENCE<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br></p>
 <ol start="2" style="list-style-type: decimal">
 <li>Write code that transforms the data below: [1] “bell pepper” “bilberry” “blackberry” “blood orange” [5] “blueberry” “cantaloupe” “chili pepper” “cloudberry”<br />
@@ -1346,52 +1346,52 @@ writeLines(code_string)            # writeLines omits the escape characters</cod
 <pre class="r"><code>str&lt;-c(&quot;BBAAAX&quot;, &quot;bBaAAxx&quot;, &quot;zzza&quot;, &quot;aaaa&quot;,&quot;...&quot;,&quot;abaaaaaaax&quot;)
 
 str_view(str,&quot;(.)\\1\\1&quot;)</code></pre>
-<div id="htmlwidget-583fdf36d561c809574c" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-583fdf36d561c809574c">{"x":{"html":"<ul>\n  <li>BB<span class='match'>AAA<\/span>X<\/li>\n  <li>bBaAAxx<\/li>\n  <li><span class='match'>zzz<\/span>a<\/li>\n  <li><span class='match'>aaa<\/span>a<\/li>\n  <li><span class='match'>...<\/span><\/li>\n  <li>ab<span class='match'>aaa<\/span>aaaax<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-f57c992219bd631bd3d2" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f57c992219bd631bd3d2">{"x":{"html":"<ul>\n  <li>BB<span class='match'>AAA<\/span>X<\/li>\n  <li>bBaAAxx<\/li>\n  <li><span class='match'>zzz<\/span>a<\/li>\n  <li><span class='match'>aaa<\/span>a<\/li>\n  <li><span class='match'>...<\/span><\/li>\n  <li>ab<span class='match'>aaa<\/span>aaaax<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br> (.)(.)\2\1</p>
 <p><br><br> <font color="purple">\2 will duplicate a search of whats inside the second parenthesis,</font> <br> <font color="purple">thus \2\1 effectively will captured match #2 then captured match #1,</font> <br><br></p>
 <pre class="r"><code>str&lt;-c(&quot;BAAX&quot;, &quot;bBaAAxx&quot;, &quot;zzza&quot;, &quot;abba&quot;,&quot;...&quot;,&quot;aaaax&quot;)
 str_view(str,&quot;(.)(.)\\2\\1&quot;)</code></pre>
-<div id="htmlwidget-67381a9bea67f7dfc2c5" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-67381a9bea67f7dfc2c5">{"x":{"html":"<ul>\n  <li>BAAX<\/li>\n  <li>bBaAAxx<\/li>\n  <li>zzza<\/li>\n  <li><span class='match'>abba<\/span><\/li>\n  <li>...<\/li>\n  <li><span class='match'>aaaa<\/span>x<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-7f12806ff96673acafb3" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-7f12806ff96673acafb3">{"x":{"html":"<ul>\n  <li>BAAX<\/li>\n  <li>bBaAAxx<\/li>\n  <li>zzza<\/li>\n  <li><span class='match'>abba<\/span><\/li>\n  <li>...<\/li>\n  <li><span class='match'>aaaa<\/span>x<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br> (..)\1 <br><br> <font color="purple">Any 2 characters followed the same 2 characters</font> <br><br></p>
 <pre class="r"><code>str&lt;-c(&quot;BABAX&quot;, &quot;bBaAAxx&quot;, &quot;zzza&quot;, &quot;abba&quot;,&quot;...&quot;,&quot;axaaaxa&quot;)
 str_view(str,&quot;(..)\1&quot;)</code></pre>
-<div id="htmlwidget-2899acac31efdd930e5d" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2899acac31efdd930e5d">{"x":{"html":"<ul>\n  <li>BABAX<\/li>\n  <li>bBaAAxx<\/li>\n  <li>zzza<\/li>\n  <li>abba<\/li>\n  <li>...<\/li>\n  <li>axaaaxa<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-1000e89ca649de56ba78" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1000e89ca649de56ba78">{"x":{"html":"<ul>\n  <li>BABAX<\/li>\n  <li>bBaAAxx<\/li>\n  <li>zzza<\/li>\n  <li>abba<\/li>\n  <li>...<\/li>\n  <li>axaaaxa<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br> (.).\1.\1 <br><br> <font color="purple">Any 2 characters followed the first character followed by any character than the first character again.</font> <br><br></p>
 <pre class="r"><code>str&lt;-c(&quot;BABAX&quot;, &quot;bBaAAxx&quot;, &quot;Z4Z5Z6za&quot;, &quot;abba&quot;,&quot;...&quot;,&quot;XaXxXaaaxa&quot;)
 str_view(str,&quot;(.)(.)\\2\\1&quot;)</code></pre>
-<div id="htmlwidget-8263ebe9ffc6fb658765" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-8263ebe9ffc6fb658765">{"x":{"html":"<ul>\n  <li>BABAX<\/li>\n  <li>bBaAAxx<\/li>\n  <li>Z4Z5Z6za<\/li>\n  <li><span class='match'>abba<\/span><\/li>\n  <li>...<\/li>\n  <li>XaXxXaaaxa<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-3a471af337efa76142db" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3a471af337efa76142db">{"x":{"html":"<ul>\n  <li>BABAX<\/li>\n  <li>bBaAAxx<\/li>\n  <li>Z4Z5Z6za<\/li>\n  <li><span class='match'>abba<\/span><\/li>\n  <li>...<\/li>\n  <li>XaXxXaaaxa<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br> &quot;(.)(.)(.).*\3\2\1&quot; <font color="purple">Any 3 characters followed by any number of characters we dont care about, followed by </font> <br> <font color="purple">the first 3 characters reversed. Asterix means 0 or more, so the “any number of” </font> <br> <font color="purple">characters in the middle could be zero.&quot; </font> <br><br></p>
 <pre class="r"><code>str&lt;-c(&quot;BAZAZZA&quot;, &quot;OBAZZABOO&quot;, &quot;Z4Z5Z6za&quot;, &quot;abbba&quot;,&quot;...&quot;,&quot;XaXxXaaaXaXxa&quot;)
 str_view(str,&quot;(.)(.)(.).*\\3\\2\\1&quot;)</code></pre>
-<div id="htmlwidget-e68b4aafa1f7a1e8960d" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e68b4aafa1f7a1e8960d">{"x":{"html":"<ul>\n  <li>BAZAZZA<\/li>\n  <li><span class='match'>OBAZZABO<\/span>O<\/li>\n  <li>Z4Z5Z6za<\/li>\n  <li>abbba<\/li>\n  <li>...<\/li>\n  <li><span class='match'>XaXxXaaaXaX<\/span>xa<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e06b20fbd9533f3fb798" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e06b20fbd9533f3fb798">{"x":{"html":"<ul>\n  <li>BAZAZZA<\/li>\n  <li><span class='match'>OBAZZABO<\/span>O<\/li>\n  <li>Z4Z5Z6za<\/li>\n  <li>abbba<\/li>\n  <li>...<\/li>\n  <li><span class='match'>XaXxXaaaXaX<\/span>xa<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br></p>
 <ol start="4" style="list-style-type: decimal">
 <li>Construct regular expressions to match words that: <br><br> Start and end with the same character. <br><br></li>
 </ol>
 <pre class="r"><code>str&lt;-c(&quot;BAZAZZA&quot;, &quot;OBAZZABOO&quot;, &quot;Z4Z5Z6za&quot;, &quot;abbba&quot;,&quot;...&quot;,&quot;XaXxXaaaXaXxa&quot;)
-str_view(str,&quot;^(.)\\1$&quot;)</code></pre>
-<div id="htmlwidget-e47bb6cb6de219410db3" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e47bb6cb6de219410db3">{"x":{"html":"<ul>\n  <li>BAZAZZA<\/li>\n  <li>OBAZZABOO<\/li>\n  <li>Z4Z5Z6za<\/li>\n  <li>abbba<\/li>\n  <li>...<\/li>\n  <li>XaXxXaaaXaXxa<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+str_view(str,&quot;^(.).*\\1$&quot;)</code></pre>
+<div id="htmlwidget-ea36699d786ebf2e8ed7" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ea36699d786ebf2e8ed7">{"x":{"html":"<ul>\n  <li>BAZAZZA<\/li>\n  <li><span class='match'>OBAZZABOO<\/span><\/li>\n  <li>Z4Z5Z6za<\/li>\n  <li><span class='match'>abbba<\/span><\/li>\n  <li><span class='match'>...<\/span><\/li>\n  <li>XaXxXaaaXaXxa<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br></p>
 <p>Contain a repeated pair of letters (e.g. “church” contains “ch” repeated twice.) <br><br></p>
-<pre class="r"><code>str&lt;-c(&quot;BBAAAX&quot;, &quot;bBaAAxx&quot;, &quot;zzza&quot;, &quot;aaaa&quot;,&quot;...&quot;,&quot;church&quot;)
+<pre class="r"><code>str&lt;-c(&quot;BBAAABBX&quot;, &quot;bBaAAxx&quot;, &quot;zzza&quot;, &quot;aaaa&quot;,&quot;church&quot;)
 
-str_view(str,&quot;(.).*\\1&quot;)</code></pre>
-<div id="htmlwidget-563122870a3a99d83d4b" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-563122870a3a99d83d4b">{"x":{"html":"<ul>\n  <li><span class='match'>BB<\/span>AAAX<\/li>\n  <li>bBa<span class='match'>AA<\/span>xx<\/li>\n  <li><span class='match'>zzz<\/span>a<\/li>\n  <li><span class='match'>aaaa<\/span><\/li>\n  <li><span class='match'>...<\/span><\/li>\n  <li><span class='match'>churc<\/span>h<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+str_view(str,&quot;(..).*\\1&quot;)</code></pre>
+<div id="htmlwidget-e6598ae6e3aec2300d87" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e6598ae6e3aec2300d87">{"x":{"html":"<ul>\n  <li><span class='match'>BBAAABB<\/span>X<\/li>\n  <li>bBaAAxx<\/li>\n  <li>zzza<\/li>\n  <li><span class='match'>aaaa<\/span><\/li>\n  <li><span class='match'>church<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br></p>
 <p>Contain one letter repeated in at least three places (e.g. “eleven” contains three “e”s.)</p>
 <p><br><br></p>
-<pre class="r"><code>str&lt;-c(&quot;BBAAAX&quot;, &quot;bBaAAxx&quot;, &quot;zzza&quot;, &quot;aaaNOa&quot;,&quot;eleven&quot;,&quot;church&quot;)
+<pre class="r"><code>str&lt;-c(&quot;BANANA&quot;, &quot;bBaAAxx&quot;, &quot;zzza&quot;, &quot;aaNOa&quot;,&quot;eleven&quot;,&quot;church&quot;)
 
 str_view(str,&quot;(.).*\\1.*\\1&quot;)</code></pre>
-<div id="htmlwidget-f4d27867e065295d0e16" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-f4d27867e065295d0e16">{"x":{"html":"<ul>\n  <li>BB<span class='match'>AAA<\/span>X<\/li>\n  <li>bBaAAxx<\/li>\n  <li><span class='match'>zzz<\/span>a<\/li>\n  <li><span class='match'>aaaNOa<\/span><\/li>\n  <li><span class='match'>eleve<\/span>n<\/li>\n  <li>church<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-c077015f5fafbe1db52c" style="width:960px;height:100%;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-c077015f5fafbe1db52c">{"x":{"html":"<ul>\n  <li>B<span class='match'>ANANA<\/span><\/li>\n  <li>bBaAAxx<\/li>\n  <li><span class='match'>zzz<\/span>a<\/li>\n  <li><span class='match'>aaNOa<\/span><\/li>\n  <li><span class='match'>eleve<\/span>n<\/li>\n  <li>church<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <p><br><br></p>
 
 
