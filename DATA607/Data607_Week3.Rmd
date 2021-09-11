@@ -1,0 +1,197 @@
+---
+title: "Data607_Week3"
+author: "Tom Buonora"
+date: "September 6, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r imports}
+
+library(stringr)    # more consistent than base r
+```
+
+<br><br>
+
+1. Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset, provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+<br><br>
+
+```{r}
+
+# note: github wraps data in formatting, to get raw data link, click the "Raw" button at the top-left of the data
+
+data_file <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv"
+majors<-read.csv(data_file)
+
+str_view(majors$Major, "DATA|STATISTICS", match=TRUE)
+
+```
+
+
+
+
+
+<br><br>
+
+2. Write code that transforms the data below:
+    [1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+    [5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+    [9] "elderberry"   "lime"         "lychee"       "mulberry"    
+    [13] "olive"        "salal berry"
+
+<br><br>
+Into a format like this:
+  c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+  
+<br><br>
+  
+  
+<font  color="purple">The question asks to convert raw data into R code</font>
+
+<br><br>
+
+```{r convert_raw_data_to_r_code}
+
+vector_data<-c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+dbl_quot<-'\"'
+double_quote <- "\"" 
+double_quote<-'"'
+data_string<-str_c(double_quote,vector_data,double_quote,collapse = ", ")
+# data_string<-str_c(vector_data, collapse = ", ") 
+code_string<-str_c("c(",data_string,")")
+writeLines(code_string)            # writeLines omits the escape characters
+
+```
+
+
+
+
+
+<br><br>
+
+
+3. Describe, in words, what these expressions will match:
+
+<br><br>
+
+(.)\1\1
+
+<br><br>
+
+<font  color="purple">Whats inside the parenthesis is a "captured" match. In this case the dot means any character,</font>
+<br>
+<font  color="purple">The back reference \\1 then takes that match and duplicates a search of the <i>next</i> character only.</font>
+<br>
+<font  color="purple">i.e. (.)\1\1 will macth any 3 consective characters.</font>
+<br><br>
+
+```{r backreference1}
+
+str<-c("BBAAAX", "bBaAAxx", "zzza", "aaaa","...","abaaaaaaax")
+
+str_view(str,"(.)\\1\\1")
+
+```
+
+
+<br><br>
+(.)(.)\\2\\1
+
+<br><br>
+<font  color="purple">\\2 will duplicate a search of whats inside the second parenthesis,</font>
+<br>
+<font  color="purple">thus \\2\\1 effectively will captured match #2 then captured match #1,</font>
+<br><br>
+
+```{r}
+str<-c("BAAX", "bBaAAxx", "zzza", "abba","...","aaaax")
+str_view(str,"(.)(.)\\2\\1")
+
+```
+
+<br><br>
+(..)\1
+<br><br>
+<font  color="purple">Any 2 characters followed the same 2 characters</font>
+<br><br>
+
+
+```{r backreference2}
+
+str<-c("BABAX", "bBaAAxx", "zzza", "abba","...","axaaaxa")
+str_view(str,"(..)\1")
+
+```
+
+<br><br>
+(.).\\1.\\1
+<br><br>
+<font  color="purple">Any 2 characters followed the first character followed by any character than the first character again.</font>
+<br><br>
+
+```{r backreference3}
+
+str<-c("BABAX", "bBaAAxx", "Z4Z5Z6za", "abba","...","XaXxXaaaxa")
+str_view(str,"(.)(.)\\2\\1")
+
+
+```
+
+<br><br>
+"(.)(.)(.).*\\3\\2\\1"
+<font  color="purple">Any 3 characters followed by any number of characters we dont care about, followed by </font>
+<br>
+<font  color="purple">the first 3 characters reversed. Asterix means 0 or more, so the "any number of " </font>
+<br>
+<font  color="purple">characters in the middle could be zero." </font>
+<br><br>
+
+```{r backreference4}
+str<-c("BAZAZZA", "OBAZZABOO", "Z4Z5Z6za", "abbba","...","XaXxXaaaXaXxa")
+str_view(str,"(.)(.)(.).*\\3\\2\\1")
+```
+
+
+<br><br>
+
+4. Construct regular expressions to match words that:
+<br><br>
+Start and end with the same character.
+<br><br>
+
+```{r start_and_end}
+
+str<-c("BAZAZZA", "OBAZZABOO", "Z4Z5Z6za", "abbba","...","XaXxXaaaXaXxa")
+str_view(str,"^(.)\\1$")
+
+```
+
+<br><br>
+
+
+Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+<br><br>
+```{r}
+str<-c("BBAAAX", "bBaAAxx", "zzza", "aaaa","...","church")
+
+str_view(str,"(.).*\\1")
+```
+
+<br><br>
+
+Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
+
+<br><br>
+
+
+
+```{r}
+str<-c("BBAAAX", "bBaAAxx", "zzza", "aaaNOa","eleven","church")
+
+str_view(str,"(.).*\\1.*\\1")
+```
+<br><br>
