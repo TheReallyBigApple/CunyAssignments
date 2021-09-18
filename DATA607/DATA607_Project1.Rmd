@@ -1,0 +1,464 @@
+---
+title: "DATA607_Project1"
+author: "Tom Buonora"
+date: "September 9, 2021"
+output: html_document
+urlcolor: orange
+---
+
+
+<style type="text/css">
+body {
+font-size: 18px;
+color: blue;
+}
+pre {
+  font-size: 12px;
+  color: maroon;
+}
+
+
+
+
+</style>
+
+
+
+
+```{r setup, include=FALSE}
+# set warning and message to false so we dont get the usual warnings
+# echo=TRUE to see source code
+knitr::opts_chunk$set(results=TRUE, echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r imports}
+library(stringr) 
+library(knitr)
+library(kableExtra)
+
+```
+
+
+
+
+<br><br><br><br><br><br>
+
+<br><br><br>
+<font size="7" color="purple">Elo scores and Expected Outcomes</font>
+<br><br><br><br><br><br>
+
+
+This project parses a particular chess crosstable and it translates the results into 2 metrics meant 
+to measure each players performance in relation to their <i>expected</i> perfromance
+
+<br>
+
+
+<br><br><br>
+
+The expected performance is measured as a function of the <i>Elo scores</i> of each player and the Elo
+scores of each of that players oppontents.
+
+<br>
+
+The Elo rating system is a standardized method of calculating relative skill of players in games like chess. Elo is not an acronym. It is named after its creator Arpad Elo. It is a only a function of the result so a "close" victory counts the same as an "easy" victory
+
+<br>
+
+There may be variations but wikipedia reports the following equation to determine ones Elo rating.
+
+<br>
+
+$$ELO \ Rating \ = \ \frac{\sum{OpponentsRatings} + 400 * (wins-losses)}{total \ games}$$
+
+<br><br><br>
+
+We will use the *Expected outcome* formula shown below.
+<br>
+
+
+$$E_a \ = \ \frac{1}{1 + 10^{\frac{(R_b \ - \ R_a)}{400}}} $$
+
+<br><br><br>
+
+Below is the function to calculate Expected Outcome which returns some number between 0 and 1 reflective of the rating differential between the 2 players.
+
+<br>
+
+```{r}
+
+
+calculateExpectedOutcome <- function(rating, opp_rating) {
+ 
+  
+  expected_outcome<-1/(1 + 10^((opp_rating - rating)/400))
+  
+  return(expected_outcome)
+   
+}
+  
+```
+
+<br>
+
+In addition, by comparison, we will calculate an *Improvement Percent* which is an intuitive metric of the delta Elo rating over starting Elo rating as shown below.
+<br>
+
+$$ImprovementPercent \ = \ \frac{PostRating \ - \ PreRating}{PreRating} $$
+
+
+<br><br><br>
+
+Below is the function which gathers the opponents data and calculates both metrics.
+<br>
+
+
+```{r}
+
+
+
+calculatePerformanceMetrics <- function(chess_df) {
+  
+  # note length(chess_df) is the columns = 7
+  
+  
+  for (row in 1:nrow(chess_df)) {
+    
+    expected_points<-0
+    tot_ratings<-0
+    tot_points<-0
+    
+    ids<-str_extract_all(chess_df[row,"opponent_ids"], "\\d+")
+    n_ids<-length(ids[[1]])
+    
+    
+    # calculate average pre rating
+    
+    pre_rating=as.integer(chess_df[row,"pre_rating"])
+    post_rating=as.integer(chess_df[row,"post_rating"])
+    player=chess_df[row,"player"]
+    tot_points<-chess_df[row,"total_points"]
+    
+    for (id in ids[[1]]) {
+      
+     id<-as.integer(id)
+     
+     if (id==0) {
+       next
+     }
+     
+     x_df<-subset(chess_df,player_id==id)
+     his_rating<-x_df$pre_rating
+     
+     opp_pre_rating<-as.integer(subset(chess_df,player_id==id)$pre_rating)
+
+     tot_ratings<-tot_ratings+opp_pre_rating
+     
+     expected_outcome<-calculateExpectedOutcome(pre_rating, opp_pre_rating)
+     expected_points<-expected_points+expected_outcome
+     
+    }
+
+    avg_rating=tot_ratings/n_ids
+    
+    chess_df[row,"opp_avg_pre_rating"]=avg_rating
+    chess_df[row,"expected_points"]=expected_points
+    
+    chess_df[row,"delta_by_exp_outcome"]=tot_points-expected_points
+
+    i<-(post_rating-pre_rating)/pre_rating
+
+    chess_df[row,"delta_by_pct"]=i
+    
+  }
+  
+ 
+  
+  return (chess_df)
+}
+  
+```
+
+
+
+<br><br><br>
+
+Create DataFrame to hold our parsed data.
+
+<br>
+
+```{r create_dataframe}
+
+
+# create the dataframe schema
+
+crosstable_df <- data.frame(
+  player_id=integer(),
+  player=character(),
+  state=character(),
+  pre_rating=integer(),
+  post_rating=integer(),
+  total_points=double(), 
+  opponent_ids=character(),          # one string containing an array of opponent ids
+  
+  opp_avg_pre_rating=integer(),     # 3 extra fields to calculate performance metrics
+  expected_points=double(),
+  delta_by_exp_outcome=double(),
+  delta_by_pct=double()
+)
+
+```
+
+
+<br><br><br>
+Open the file.
+<br>
+
+
+
+
+```{r create file handle}
+
+
+data_file<-'https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/DATA607/tournamentinfo.txt'
+
+
+con = file(data_file, "r")
+
+
+
+header_processed<-FALSE
+
+
+```
+
+
+<br><br><br>
+Main Loop. Read 3 lines at a time. Skip the headers. Parse into dataframe. 
+<br>
+
+```{r}
+
+
+
+
+while ( TRUE ) {
+  
+  # read 3 lines at a time
+  line = readLines(con, n = 3)
+  
+  
+  # if we didnt read 3 lines, then it must be EOF
+  if ( length(line) < 3 ) {
+    break
+  }
+  
+  # first time through. Skip the column headers
+  if ( header_processed == FALSE ) {
+    header_processed=TRUE
+    next
+  }
+  
+  
+  # pipe delimited
+  line2<-unlist(strsplit(line[2], split='\\|'))
+  line3<-unlist(strsplit(line[3], split='\\|'))
+  
+  player_id<-as.integer(line2[1])
+  player<-line2[2]
+  state<-line3[1]
+  
+  # to properly isolate the rating, we need to know exactly what the rule is
+  #
+  #  the pre rating follows "R: " which may or may not have a space
+  #  but some are suffixed with a P, some are only 3 digits
+  #
+  #  the post rating follows "->" which may or may not have a space
+  
+  # below regex matches any# of spaces+digits following R: 
+  #        the ?<= construct is what omits the "/ R:" from being part of the match
+  #        once any non-digit is found, the match ends
+  
+  pre_rating<-str_extract(line3[2], "(?<=/ R:)\\s*(\\d+)")
+  
+  # below regex matches any consective digits after a "->"
+  post_rating<-str_extract(line3[2], "(?<=->)\\s*(\\d+)")
+  
+  total_points<-as.double(line2[3])
+  
+  opponent_ids<-str_c(line2[4],line2[5],line2[6], line2[7],line2[8],line2[9],line2[10])
+
+  
+  # remove everything but the numbers
+  opponent_ids<-str_replace_all(opponent_ids, "\\D", " ")
+  
+  
+  ids<-str_extract_all(opponent_ids, "\\d+")
+  
+  
+  
+  # we will calculate these in calculatePerformanceMetrics()
+  opp_avg_pre_rating=0
+  expected_points=0
+  delta_by_pct=0
+  delta_by_exp_outcome<-0
+  
+  
+  
+  crosstable_df<-rbind(crosstable_df,data.frame(
+    player_id=player_id,
+    player=player,
+    state=state,   
+    pre_rating=pre_rating,
+    post_rating=post_rating,
+    total_points=total_points, 
+    opponent_ids=opponent_ids,    
+    opp_avg_pre_rating=opp_avg_pre_rating,
+    expected_points=expected_points,
+   delta_by_exp_outcome=delta_by_exp_outcome,
+   delta_by_pct=delta_by_pct
+  ))
+  
+  
+}
+
+
+```
+
+
+
+<br><br><br>
+Close connection.
+<br>
+
+```{r close_file}
+close(con)
+```
+
+<br><br><br>
+Calculate. 
+<br>
+
+
+```{r calculate_metrics}
+
+crosstable_df<- calculatePerformanceMetrics(crosstable_df) 
+```
+
+<br><br><br>
+Format the numbers. 
+<br>
+
+```{r format_numbers}
+
+crosstable_df$opp_avg_pre_rating<-round(crosstable_df$opp_avg_pre_rating,0)
+crosstable_df$delta_by_exp_outcome<-round(crosstable_df$delta_by_exp_outcome,2)
+crosstable_df$delta_by_pct<-round(crosstable_df$delta_by_pct,4)
+```
+
+<br><br><br><br><br><br>
+
+<br>
+Let plot the 2 metrics together. Well scale the percentage to equate them to points delta. 
+<br>
+
+
+
+```{r}
+
+y <- crosstable_df$delta_by_exp_outcome
+x <- crosstable_df$delta_by_pct*25
+
+plot(y, ann = FALSE, type = "n")
+# lines(y, col = "green4", lty = "dotted")
+
+points(x, bg = "limegreen", pch = 21)
+points(y, bg = "IndianRed4", pch = 21)
+
+legend("topright", c("Pct", "Exp Out"), cex=0.8, col=c("limegreen","IndianRed4"), lty=1:1, lwd=2, bty="n");
+
+title(main = "Improvement Measurements",
+       xlab = "Player",
+      ylab = "Performance",
+       col.main = "blue", col.lab = gray(.8),
+      cex.main = 1.2, cex.lab = 1.0, font.main = 4, font.lab = 3)
+```
+
+
+<br>
+The 2 metrics trend together but they are not mathematically equivalent.
+<br>
+
+
+
+
+
+
+
+
+
+<br>
+Let see the top 5 performers vs Expected Outcome. 
+<br>
+
+
+```{r most_improved_by_exp_outcome}
+
+# use minus sign to sort descending
+df_sorted<-crosstable_df[order(-crosstable_df$delta_by_exp_outcome),]
+
+#select the fields you want
+df_few_fields<-df_sorted[c("player","pre_rating", "post_rating", "opp_avg_pre_rating", "total_points","delta_by_exp_outcome")]
+
+top6<-head(df_few_fields)
+# rename the columns
+colnames(top6)<-c("player","pre", "post", "opp", "points","by_exp_outcome")
+kable(top6, caption="",row.names = FALSE,format="simple", booktabs=TRUE)
+```
+
+<br><br><br>
+Let see the top 5 performers by percentage improvement. 
+<br>
+
+
+```{r most_improved_by_percent}
+
+df_sorted<-crosstable_df[order(-crosstable_df$delta_by_pct),]
+df_few_fields<-df_sorted[c("player","pre_rating", "post_rating", "opp_avg_pre_rating", "total_points","delta_by_pct")]
+
+top6<-head(df_few_fields)
+
+colnames(top6)<-c("player","pre", "post", "opp", "points","by_pct")
+
+kable(top6, caption="",row.names = FALSE,format="simple", booktabs=TRUE)
+
+```
+
+<br>
+Both metrics represent Jacob and Zachary and Aditya did well, but the metric  are not mathematically equivalent either. 
+<br>
+There may be several factors that cause deviations. One is the scaling. Jacob started with a horrible rating of 377 and scored 3 points.
+His post rating was then 1076 which greatly inflated the simple percent improvement metric.
+<br>
+
+
+
+
+
+<br><br><br>
+Write our final data to a csv file in the default working directory.
+<br>
+
+
+If you are not sure where that is, type getwd().  
+
+
+```{r write_results_to_file}
+
+# write data to working directory ( see getwd() )
+write.csv(crosstable_df,"chess_data.csv",row.names = FALSE)
+
+```
+
+
+
