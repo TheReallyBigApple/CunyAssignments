@@ -1,0 +1,339 @@
+---
+title: "Data607_Week5"
+author: "Tom Buonora"
+date: "September 24, 2021"
+
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+---
+
+
+
+<style type="text/css">
+body {
+font-size: 18px;
+color: blue;
+}
+pre {
+  font-size: 12px;
+  color: maroon;
+}
+
+thead,
+tfoot {
+    background-color: #3f87a6;
+    color: #fff;
+}
+
+tbody {
+    background-color: #e4f0f5;
+}
+
+caption {
+    padding: 10px;
+    caption-side: bottom;
+}
+
+table {
+    border-collapse: collapse;
+    border: 2px solid rgb(200, 200, 200);
+    letter-spacing: 1px;
+    font-family: sans-serif;
+    font-size: 1.2rem;
+}
+
+td,
+th {
+    border: 1px solid rgb(190, 190, 190);
+    padding: 5px 10px;
+}
+
+td {
+    text-align: center;
+}
+
+
+</style>
+
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(results=TRUE, echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+<br><br><br>
+<font size="7" color="purple">Tidy data using dplyr and tidyr</font>
+<br><br><br><br><br><br>
+
+# The R Code
+
+Import readxl and tidyverse
+<br>
+
+```{r}
+
+library(readxl)
+library(tidyverse)         # ggplot2, dplyr, tidyr, readr, tibble, sringr and more
+library(knitr)
+
+```
+
+<br>
+Download the excel file. Note the mode is "wb" to preserve the binary elements of the excel file.
+<br>
+
+```{r download from internet}
+
+sourcefile<-"https://github.com/acatlin/data/raw/master/israeli_vaccination_data_analysis_start.xlsx"
+curr_path<-str_trim(getwd())
+
+destfile<-paste0(curr_path,"/vaccine_data.xlsx")
+
+download.file(sourcefile, destfile, mode = "wb")
+
+```
+
+
+
+
+<br>
+Read the excel file into a tibble.
+<br>
+
+```{r read_excel}
+
+efile <- read_excel(destfile) 
+
+
+```
+
+
+<br>
+Get rid of the rows we dont need.
+<br>
+
+```{r}
+
+efile <- efile %>% filter(Age == ">50" | Age == "<50") 
+
+```
+
+
+<br>
+Rename the columns.
+<br>
+```{r rename columns}
+
+efile <- efile %>% rename("pop_nv" = "Population %", "pop_v" = "...3", "sc_nv" = "Severe Cases", "sc_v" = "...5" )
+
+```
+
+<br>
+Convert the fields to numeric.
+<br>
+
+```{r}
+efile<- efile %>% mutate(across(2:6, as.numeric))
+```
+
+
+<br>
+Im isolating each individual field as opposed to performing vector operations.
+<br>
+It provides some clarity and its a good excercise for dplyr functionality.
+<br>
+
+```{r define fields}
+
+# overall population
+pop_lt_50_nv <- efile %>% filter(Age == "<50") %>% select("pop_nv") %>% first()
+pop_gt_50_nv <- efile %>% filter(Age == ">50") %>% select("pop_nv") %>% first()
+pop_lt_50_v <- efile %>% filter(Age == "<50") %>% select("pop_v") %>% first()
+pop_gt_50_v <- efile %>% filter(Age == ">50") %>% select("pop_v") %>% first()
+
+
+# severe cases
+
+sc_lt_50_nv<-efile %>% filter(Age == "<50") %>% select("sc_nv") %>% first()
+sc_gt_50_nv<-efile %>% filter(Age == ">50") %>% select("sc_nv") %>% first()
+sc_lt_50_v<-efile %>% filter(Age == "<50") %>% select("sc_v") %>% first()
+sc_gt_50_v<-efile %>% filter(Age == ">50") %>% select("sc_v") %>% first()
+
+```
+
+<br>
+Calculate totals.
+<br>
+
+```{r}
+
+tot_pop_nv<-pop_lt_50_nv + pop_gt_50_nv
+tot_pop_v<-pop_lt_50_v + pop_gt_50_v
+tot_pop<-tot_pop_nv+tot_pop_v
+
+
+tot_sc_nv<-sc_lt_50_nv + sc_gt_50_nv
+tot_sc_v<-sc_lt_50_v + sc_gt_50_v
+tot_sc<-tot_sc_nv+tot_sc_v
+```
+
+
+<br>
+Calculate Attack Rates.
+<br>
+
+```{r calculate attack rates}
+
+
+
+
+
+aru_lt_50<-sc_lt_50_nv / 1000   
+aru_gt_50<-sc_gt_50_nv / 1000
+
+arv_lt_50<-sc_lt_50_v / 1000
+arv_gt_50<-sc_gt_50_v / 1000
+
+# relative risk is the severe cases of vaccinated over non vaccinated
+rr_lt_50 <- arv_lt_50 / aru_lt_50
+rr_gt_50 <- arv_gt_50 / aru_gt_50
+  
+# divide by 2000 since we are averaging the 2 ratios of 1000
+aru_all_ages<-(sc_gt_50_nv + sc_lt_50_nv) / 2000
+arv_all_ages<-(sc_gt_50_v + sc_lt_50_v) / 2000
+rr_all_ages<-(rr_gt_50 + rr_lt_50) / 2
+
+```
+
+
+<br>
+Calculate Vaccine Efficacy.
+<br>
+
+
+```{r calculate efficacy}
+ve_lt_50<-(aru_lt_50-arv_lt_50)/aru_lt_50 
+ve_gt_50<-(aru_gt_50-arv_gt_50)/aru_gt_50                      
+
+
+# ve is the difference / aru
+ve<-(aru_all_ages-arv_all_ages)/aru_all_ages                   # .674
+
+# same thing
+ve<-(1- (arv_all_ages)/(aru_all_ages))
+
+
+
+# print(sprintf("The attack rate on the vaccinated for those under 50 is %.3f", arv_lt_50))
+# print(sprintf("The attack rate on the vaccinated for those over 50 is %.3f", arv_gt_50))
+# print(sprintf("The attack rate for all vaccinated is  %.3f", arv_all_ages))
+# 
+# print(sprintf("The attack rate on the unvaccinated for those under 50 is %.3f", aru_lt_50))
+# print(sprintf("The attack rate on the unvaccinated for those over 50 is %.3f", aru_gt_50))
+# print(sprintf("The attack rate for all unvaccinated is %.3f", aru_all_ages))
+
+
+```
+
+<br>
+Add the Efficacies and the Totals to our tibble.
+<br>
+
+
+```{r update tibble}
+
+# efile <- efile %>%  add_column(rr = c(rr_lt_50, rr_gt_50, rr_all_ages),  .after = "sc_v") 
+efile <- efile %>%  add_column(rr = 0,  .after = "sc_v") 
+efile <-efile %>% rows_insert(tibble("Age"= "Total", pop_nv=tot_pop_nv,  pop_v=tot_pop_v, sc_nv=tot_sc_nv,  sc_v=tot_sc_v, rr=rr_all_ages, Efficacy=ve))
+efile <- efile %>% rows_update(tibble(Age= "<50", Efficacy = ve_lt_50))
+efile <- efile %>% rows_update(tibble(Age= ">50", Efficacy = ve_gt_50))
+efile <- efile %>% rows_update(tibble(Age= "<50", rr = rr_lt_50))
+efile <- efile %>% rows_update(tibble(Age= ">50", rr = rr_gt_50))
+
+```
+
+<br>
+Round the numerics for presentation purposes.
+<br>
+
+```{r}
+
+efile <- efile %>% mutate( Efficacy = round(Efficacy,3 ))
+
+```
+
+<br>
+Show everyone our updated tibble.
+<br>
+
+```{r show everyone}
+kable(efile, caption="",row.names = FALSE, booktabs=TRUE,format.args = list(decimal.mark = '.', big.mark = ",", digits=3))
+
+
+```
+
+
+<br>
+Save the tibble to a csv file.
+<br>
+```{r save to csv}
+curr_path<-str_trim(getwd())
+destfile<-paste0(curr_path,"/vaccine_data_efficacy.csv")
+write.csv(efile, destfile)
+```
+
+<br><br><br><br><br><br>
+
+# The Questions. The Answers
+
+<br><br><br>
+
+
+<font size="5" color="maroon">1. What is the total population ?</font>
+
+<font size="4" color="blue"><i>The total population adds up to about 6.9MM. That was Israels total population in 2005
+<br>
+Its now about 9MM. The percentage values seem to indicate that about 96% of the less than 50 population is accounted for.
+<br>
+So perhaps this data was created around 2005. If I were to publish analysis on this data, I would need to validate the data.
+</i></font>
+
+<br><br><br>
+
+<font size="5" color="maroon">2. Explain the efficacy result.</font>
+
+<font size="4" color="blue"><i>The results indicate that the vaccine adversely effects the older population, i.e. doesnt work.</i></font>
+
+<br><br>
+$$Efficacy \ = \ \frac{ARU \ - \ ARV}{ARU} \ * 100%$$
+<br>
+where 
+<br>
+$$ARU \ = \ Attack \ Rate \ of \ Unvaccinated \ People \ = \frac{Severe \ Cases (Unvaccinated) }{Population(Unvaccinated) }$$
+<br>
+
+$$ARV \ = \ Attack \ Rate \ of \ Vaccinated \ People \ = \frac{Severe \ Cases (Vaccinated) }{Population(Vaccinated) }$$
+
+
+<br>
+<font size="5" color="maroon">(3) Compare the attack rates.</font>
+<br><br><br>
+
+
+<font size="4" color="blue"><i>I dont understand why the severe cases is higher for the over 50 vaccinated group. Is this supposed to represent
+an actual distribution to the Isreali population or just a small sample ? I would need to understand the context.
+<br>
+</i></font>
+
+<br><br><br><br><br><br>
+
