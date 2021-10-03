@@ -1,0 +1,539 @@
+---
+title: "Data607_Project2_Week6"
+author: "Tom Buonora"
+date: "September 26, 2021"
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+---
+
+
+
+<!--   this helps with tables ?  -->
+
+<style type="text/css">
+body {
+font-size: 18px;
+color: blue;
+}
+pre {
+  font-size: 12px;
+  color: maroon;
+}
+
+thead,
+tfoot {
+    background-color: #3f87a6;
+    color: #fff;
+}
+
+tbody {
+    background-color: #e4f0f5;
+}
+
+caption {
+    padding: 10px;
+    caption-side: bottom;
+}
+
+table {
+    border-collapse: collapse;
+    border: 2px solid rgb(200, 200, 200);
+    letter-spacing: 1px;
+    font-family: sans-serif;
+    font-size: 1.2rem;
+}
+
+td,
+th {
+    border: 1px solid rgb(190, 190, 190);
+    padding: 5px 10px;
+}
+
+td {
+    text-align: center;
+}
+
+
+</style>
+
+
+
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(results=TRUE, echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+<br><br><br>
+<font size="7" color="purple">Basic Data Extraction : NYC Parks </font>
+<br><br><br><br><br><br>
+
+# Overview
+
+
+<font size="5" color="blue">  This project will explore the NYC park data
+     from the "NYC Open Data" project and the question we will answer is what neighborhood has the most or best
+       park lands. We will look at it by acreage vs. population.
+       
+<br><br><br>
+       
+Lets begin.</font>
+
+<br><br><br>
+
+<font size="5" color="blue"> Imports. Constants.</font>
+
+```{r imports and constants}
+
+library(readxl)
+library(tidyverse)         # ggplot2, dplyr, tidyr, readr, tibble, sringr and more
+library(knitr)
+
+CURR_PATH<-str_trim(getwd())
+
+```
+
+<br><br><br><br>
+
+
+# Download the Data
+
+
+<font size="5" color="blue">  Download the NYC Park data into a local csv file and bring it into a data frame.</font>
+
+```{r park-data}
+
+
+download_parks<-"https://data.cityofnewyork.us/api/views/enfh-gkve/rows.csv?accessType=DOWNLOAD"
+
+destfile<-paste0(CURR_PATH,"/parks.csv")
+
+
+download.file(download_parks, destfile)
+
+
+cfile<-read.csv(destfile)
+```
+
+
+
+
+<br>  <font size="5" color="blue">  Download an extract of neighborhoods and zip codes so we can group each park into neighborhoods.</font>  <br>
+
+```{r neighborhood-data}
+
+download_neighborhoods<- "https://data.beta.nyc/dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/7caac650-d082-4aea-9f9b-3681d568e8a5/download/nyc_zip_borough_neighborhoods_pop.csv"
+
+destfile<-paste0(CURR_PATH,"/neighborhoods.csv")
+
+download.file(download_neighborhoods, destfile)
+
+zfile<-read.csv(destfile)
+
+```
+
+
+<br><br><br><br>
+
+# A look at the Data
+
+
+<br> <font size="5" color="blue"> Just because its in the database doesnt mean it adds to quality of life. Some parks are beautiful...</font> <br>
+
+<center>[**Gantry Park**](http://www.nycgovparks.org/parks/X101/)</center>
+<center><img src="https://www.nycgovparks.org/photo_gallery/full_size/24104.jpg" width="400"  height="300"></center>
+
+
+<br><br>
+
+<br> <font size="5" color="blue"> Others not so beautiful.</font> <br>
+<center>[**Crotona Parkway Malls**](http://www.nycgovparks.org/parks/X101/)</center>
+<center><img src="https://www.nycgovparks.org/photo_gallery/full_size/23732.jpg" width="400"  height="300"></center>
+
+<br><br>
+
+ 
+ 
+<br> <font size="5" color="blue">We will make some effort to restrict the data set to just the kinds of park land that add to quality of life.</font> <br>
+
+<br><br><br><br>
+
+# Filter data
+
+
+
+<br> <font size="5" color="blue"> Remove some duff data and remove the ones that really arent "quality of life" parks.</font> <br>
+
+
+```{r reduce_park_data}
+
+
+# get rid of some of the the duff data, we dont need the records that are not of class PARK
+
+cfile<-subset(cfile, CLASS=="PARK")
+
+
+cfile<-subset(cfile, TYPECATEGORY!="Cemetery" & TYPECATEGORY!="Mall" & TYPECATEGORY!="Parkway"  )
+
+cfile<-subset(cfile, SUBCATEGORY!="Lot" & SUBCATEGORY!="Parking Lot" & SUBCATEGORY!="PKWY"  & SUBCATEGORY!="EXWY" & SUBCATEGORY!="Building" & SUBCATEGORY!="Facility" )
+
+
+# i noticed if the sign just says "Park" its usually a very tiny piece of land
+cfile<-subset(cfile, SIGNNAME != "Park")
+```
+
+
+
+
+<br><br><br><br>
+
+# Tidy data
+
+
+<br> <font size="5" color="blue"> Now we need to join our Neighbood data to the Park data, joining by zip code.</font> <br>
+
+
+
+<br> <font size="5" color="blue">The problem is many parks span multiple zipcodes and appear as 1.110311e+34  or 1.000110e+09.</font> <br>
+
+
+<br> <font size="5" color="blue">So convert to string remove the dot, substring out the first zip code, and mark it as a multiple zip code park.</font> <br>
+
+<br> <font size="5" color="blue">Note I created a zipcode table using the unique identifier "GISOBJID".</font> <br>
+
+```{r rename columns}
+
+
+
+
+
+multiple_zips <- cfile %>% filter(ZIPCODE > 99999) %>% select("GISOBJID","ZIPCODE")
+
+multiple_zips$ZIPCODE<-as.character(multiple_zips$ZIPCODE)
+
+multiple_zips$ZIPCODE<-str_replace_all(multiple_zips$ZIPCODE, "\\.", "")
+
+
+multiple_zips$ZIPCODE<-str_sub(multiple_zips$ZIPCODE, 1, 5) 
+
+multiple_zips<- multiple_zips %>% mutate(multi_zip = 'Y'   )
+
+# this approach was my plan B, create a table with all zip codes
+single_zips <- cfile %>% filter(ZIPCODE < 99999) %>% select("GISOBJID","ZIPCODE")
+single_zips<- single_zips %>% mutate(multi_zip = 'N'   )
+all_zips<-rbind(multiple_zips, single_zips)
+
+
+```
+
+
+
+
+
+
+<br> <font size="5" color="blue">Now that we created a zipcode table. Join the 3 tables into one.</font> <br>
+
+```{r mutate_boroughs}
+
+
+#  now merge the 2 tables
+#   1) update the original zipcode with the new zipcode
+#   2) add the multi_zip  field
+
+
+
+
+
+# reduce the data set to just the fields we care about, note im not including zipcode or borough
+# note im not bringinging in EAPPLY or NAME311, as SIGNNAME seems to be the most reliable of the 3
+df_temp<-cfile[c("SIGNNAME","ACRES", "DEPARTMENT", "URL",  "GISOBJID",
+            "JURISDICTION", "TYPECATEGORY", "SUBCATEGORY", "WATERFRONT")]
+
+
+
+# all.X=True means we will include all records from df_temp regardless
+df_temp<-merge(df_temp, all_zips, by.x ="GISOBJID", by.y = "GISOBJID", all.x = TRUE)   
+
+
+# commit point
+
+# now merge again with neighborhood file
+df_final<-merge(df_temp, zfile, by.x ="ZIPCODE", by.y = "zip", all.x = TRUE)  
+
+```
+
+
+
+
+<br> <font size="5" color="blue">Great. Cleanup the columns a bit.</font> <br>
+
+```{r cleanup columns}
+
+
+# clean up the columns
+names(df_final)<-tolower(names(df_final))
+
+
+
+# rename some of the columns to help clarify things
+
+df_final<-df_final %>% 
+  rename(
+    size_acres=acres,              
+    pd_type=typecategory,          # Planning and Development Division type
+    om_type=subcategory           # Operations & Management Division type
+)
+
+
+df_final <- df_final %>% drop_na(borough)   # a few bad zip codes
+
+```
+
+
+
+
+
+
+
+
+<br> <font size="5" color="blue">Convert the acres to square miles.</font> <br>
+
+```{r}
+# an acre is 0.0015625 square miles
+
+df_final<-df_final %>% dplyr::mutate(size_sm = size_acres*0.0015625)
+
+```
+
+
+
+<br><br><br><br>
+
+# Take a peek with a couple of queries
+
+
+
+<br> <font size="5" color="blue">The 5 biggest parks.</font> <br>
+
+```{r}
+
+# display the biggest waterfront parks 
+df<-subset(df_final, waterfront=="true")
+
+df<-df %>% select("signname", "borough", "neighborhood", "zipcode", "size_acres", "om_type", "pd_type", "waterfront")
+
+df<-df[order(-df$size_acres),]
+
+kable(head(df), caption="Biggest Parks",row.names = FALSE, booktabs=TRUE,format.args = list(decimal.mark = '.', big.mark = ",", digits=3))
+
+```
+
+
+
+
+
+
+<br> <font size="5" color="blue">The 5 biggest waterfront parks.</font> <br>
+
+```{r}
+
+# display the biggest waterfront parks 
+df<-subset(df_final, waterfront=="true")
+
+df<-df %>% select("signname", "borough", "neighborhood", "zipcode", "size_acres", "om_type", "pd_type", "waterfront")
+
+df<-df[order(-df$size_acres),]
+
+kable(head(df), caption="Big Waterfront Parks",row.names = FALSE, booktabs=TRUE,format.args = list(decimal.mark = '.', big.mark = ",", digits=3))
+
+```
+
+
+
+
+<br> <font size="5" color="blue">The 5 biggest parks in Borough Park, Brooklyn.(not very big)</font> <br>
+
+```{r}
+
+df<-subset(df_final, neighborhood=="Borough Park")
+
+df<-df %>% select("signname", "borough", "neighborhood", "size_acres", "zipcode", "population")
+
+df<-df[order(-df$size_acres),]
+
+
+kable(head(df), caption=" ",row.names = FALSE, booktabs=TRUE,format.args = list(decimal.mark = '.', big.mark = ",", digits=3))
+```
+
+
+
+
+
+<br> <font size="5" color="blue">The 5 biggest parks in the South Shore of Staten Island (fairly big).</font> <br>
+
+```{r}
+
+df<-subset(df_final, neighborhood=="South Shore")
+
+df<-df %>% select("signname", "borough", "neighborhood", "size_acres", "zipcode", "population")
+
+df<-df[order(-df$size_acres),]
+
+
+kable(head(df), caption=" ",row.names = FALSE, booktabs=TRUE,format.args = list(decimal.mark = '.', big.mark = ",", digits=3))
+```
+
+
+
+
+
+
+
+<br><br><br><br>
+
+# Aggregate By Neighborhood
+
+
+
+
+<br><br><br><br>
+
+
+
+
+<br> <font size="5" color="blue">Create summary by zip code.</font> <br>
+
+<br> Recall that our population is by zip code. The acres is by park.<br>
+
+```{r}
+
+
+df_sum_zip <-df_final %>%
+  group_by(zipcode) %>%
+  summarise(borough = min(borough), neighborhood=min(neighborhood), population=min(population), acres = sum(size_acres), parks=n()  )
+
+
+```
+
+
+
+
+
+<br> <font size="5" color="blue">Create summary by neighborhood.</font> <br>
+
+```{r by neighborhood}
+
+df_sum_neighborhood <- df_sum_zip %>%
+  group_by(neighborhood) %>%
+  summarise(borough = min(borough), population=sum(population), parks = sum(parks), acres = sum(acres))
+
+df_sum_neighborhood <- df_sum_neighborhood %>% mutate(parkland_per_person = acres/(population/100000))
+
+```
+
+
+
+
+<br> <font size="5" color="blue"> A few records from the neiborhood summary. </font> <br>
+
+
+```{r show everyone neighborhood}
+kable(head(df_sum_neighborhood), caption="By Neighborhood",row.names = FALSE, booktabs=TRUE,format.args = list(decimal.mark = '.', big.mark = ",", digits=3))
+
+```
+
+
+
+
+
+
+
+<br><br><br><br>
+
+# The Summary in 3 Bar Charts
+
+
+<br><br><br><br>
+
+
+<br> <font size="5" color="blue"> Population of each neighborhood.</font> <br>
+
+
+
+```{r bar char 1}
+
+options(repr.plot.width=8, repr.plot.height=3)
+ggplot(df_sum_neighborhood, aes(x = neighborhood, y = population, main=" ")) +
+  geom_bar(stat = "identity") +
+  coord_flip() + scale_y_continuous(name="Population") +
+  scale_x_discrete(name="Neighborhood") +
+  theme(axis.text.x = element_text(face="bold", color="#008000",
+                                   size=8, angle=0),
+        axis.text.y = element_text(face="bold", color="#008000",
+                                   size=8, angle=0))
+
+
+```
+
+
+
+
+<br> <font size="5" color="blue"> Parkland of each neighborhood.</font> <br>
+
+
+
+```{r bar char 2}
+
+options(repr.plot.width=8, repr.plot.height=3)
+ggplot(df_sum_neighborhood, aes(x = neighborhood, y = acres, main=" ")) +
+  geom_bar(stat = "identity") +
+  coord_flip() + scale_y_continuous(name="Parkland in Acres") +
+  scale_x_discrete(name="Neighborhood") +
+  theme(axis.text.x = element_text(face="bold", color="#008000",
+                                   size=8, angle=0),
+        axis.text.y = element_text(face="bold", color="#008000",
+                                   size=8, angle=0))
+
+
+```
+
+
+
+<br> <font size="5" color="blue"> Parkland per Person.</font> <br>
+
+
+
+```{r bar char 3}
+
+options(repr.plot.width=8, repr.plot.height=3)
+ggplot(df_sum_neighborhood, aes(x = neighborhood, y = parkland_per_person, main=" ")) +
+  geom_bar(stat = "identity") +
+  coord_flip() + scale_y_continuous(name="Parkland Acreage per Population") +
+  scale_x_discrete(name="Neighborhood") +
+  theme(axis.text.x = element_text(face="bold", color="#008000",
+                                   size=8, angle=0),
+        axis.text.y = element_text(face="bold", color="#008000",
+                                   size=8, angle=0))
+
+
+```
+
+
+
+<br> <font size="5" color="blue"> There are some massive parklands that skew the results. 
+<br>
+But this study does illuminate some neighborhoods (like Borough Park) that could stand to have more space for parks.</font> 
+<br>
+
+<br> <font size="5" color="blue"> Theres a lot of context and caveats so this is a study that definitely could be expanded.</font> <br>
+
