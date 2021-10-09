@@ -1,0 +1,27 @@
+<books>
+  <book>
+    <title>A Tree Grows in Brooklyn</title> 
+    <authors>
+      <author>Betty Smith</author>
+    </authors>
+  <year>1943</year>
+   <type>Fiction</type>
+ </book>
+  <book>
+    <title>R For Dummies</title> 
+    <authors>
+      <author>Joris Meys</author>
+      <author>Andrie de Vries</author>
+    </authors>
+  <year>2015</year>
+   <type>Non Fiction</type>
+ </book>
+  <book>
+    <title>The Martian</title> 
+    <authors>
+      <author>Andy Weir</author>
+    </authors>
+  <year>2011</year>
+   <type>Fiction</type>
+ </book>
+ </books>  
