@@ -1,0 +1,262 @@
+---
+title: "Data607_Week7"
+author: "Tom Buonora"
+date: "October 8, 2021"
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+---
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(results=TRUE, echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
+```{r imports and constants, include=FALSE}
+
+library(XML)               # besides xml, this helps us with html by providing the readHTMLTable function
+library(tidyverse)         # ggplot2, dplyr, tidyr, readr, tibble, sringr and more
+library(knitr)
+library(rjson)
+
+CURR_PATH<-str_trim(getwd())
+
+```
+
+
+<br><br><br>
+<font size="7" color="purple">Data Scraping and Parsing : My Favorite Books </font>
+<br><br><br>
+
+# Overview
+
+
+<font size="5" color="blue">  This assignment will take a data set of book data in 3 common formats - html, xml, and json.
+<br><br><br>
+Then it will parse into a R data frame and display it. </font>
+<br><br><br>
+
+
+<font size="5" color="blue">Each return set is different so standardizing it into a data frame requires some work. </font>
+  
+  <br><br>
+
+Format        | Function      |  Package   | Returns 
+-----------  | -------        | ---------- | ------------- 
+HTML         | readHTMLTable  |  XML       | List of Lists    
+XML          | xmlParse       |  XML       | XMLInternalDocument    
+JSON         | fromJSON       |  rjson     | List of Lists  
+
+
+<br><br><br>
+
+# HTML
+
+<br><br><br>
+
+<br>
+<font size="5" color="blue">  The HTML table format looks like this. 
+<br>
+
+  
+<pre>
+
+&lt;table&gt; 
+ &lt;tr&gt;
+    &lt;th&gt;Title&lt;/th&gt;
+    &lt;th&gt;Year&lt;/th&gt;
+    &lt;th&gt;Type&lt;/th&gt;
+    &lt;th&gt;Authors&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;A Tree Grows in Brooklyn&lt;/td&gt;
+    &lt;td&gt;1943&lt;/td&gt;
+    &lt;td&gt;Fiction&lt;/td&gt;
+    &lt;td&gt;Betty Smith&lt;/td&gt;
+  &lt;/tr&gt;
+  
+  &lt;tr&gt;
+    &lt;td&gt;R For Dummies&lt;/td&gt;
+    &lt;td&gt;2015&lt;/td&gt;
+    &lt;td&gt;Non Fiction&lt;/td&gt;
+    &lt;td&gt;Andrie de Vries&lt;/td&gt;&lt;td&gt;Joris Meys&lt;/td&gt;
+  &lt;/tr&gt;
+  
+  &lt;tr&gt;
+    &lt;td&gt;The Martian&lt;/td&gt;
+    &lt;td&gt;2011&lt;/td&gt;
+    &lt;td&gt;Fiction&lt;/td&gt;
+    &lt;td&gt;Andy Weir&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+ </pre>
+
+<br><br><br>
+
+<br>  <font size="5" color="blue">  Download HTML file.  Parse into dataframe and display. </font>  <br>
+
+
+
+```{r parse html table}
+
+html_file<-"https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/DATA607/MyFavoriteBooks.html"
+
+destfile<-paste0(CURR_PATH,"/books.html")
+download.file(html_file, destfile)
+tables <- readHTMLTable(destfile)
+
+books_html_df<-as.data.frame(tables[1])
+
+colnames(books_html_df)<-c("Title", " Year", "Type", "Author1", "Author2")
+
+
+kable(books_html_df, caption="My Favorite Books",row.names = FALSE, booktabs=TRUE)
+
+```
+
+<br><br><br>
+
+# XML
+
+
+<br><br><br>
+
+<br>
+<font size="5" color="blue">  The XML format looks like this. 
+<br>
+
+
+
+<pre>
+&lt;books&gt;
+  &lt;book&gt;
+    &lt;title&gt;A Tree Grows in Brooklyn&lt;/title&gt; 
+    &lt;authors&gt;
+      &lt;author&gt;Betty Smith&lt;/author&gt;
+    &lt;/authors&gt;
+  &lt;year&gt;1943&lt;/year&gt;
+   &lt;type&gt;Fiction&lt;/type&gt;
+ &lt;/book&gt;
+  &lt;book&gt;
+    &lt;title&gt;R For Dummies&lt;/title&gt; 
+    &lt;authors&gt;
+      &lt;author&gt;Joris Meys&lt;/author&gt;
+      &lt;author&gt;Andrie de Vries&lt;/author&gt;
+    &lt;/authors&gt;
+  &lt;year&gt;2015&lt;/year&gt;
+   &lt;type&gt;Non Fiction&lt;/type&gt;
+ &lt;/book&gt;
+  &lt;book&gt;
+    &lt;title&gt;The Martian&lt;/title&gt; 
+    &lt;authors&gt;
+      &lt;author&gt;Andy Weir&lt;/author&gt;
+    &lt;/authors&gt;
+  &lt;year&gt;2011&lt;/year&gt;
+   &lt;type&gt;Fiction&lt;/type&gt;
+ &lt;/book&gt;
+ &lt;/books&gt; 
+ </pre> 
+
+<br><br><br>
+
+<br>  <font size="5" color="blue">  Download XML file.  Parse into dataframe and display. </font>  <br>
+
+
+
+
+```{r xml}
+
+
+xml_file<-"https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/DATA607/MyFavoriteBooks.xml"
+
+destfile<-paste0(CURR_PATH,"/books.xml")
+download.file(xml_file, destfile)
+
+xml_data<- xmlParse(file = destfile)
+
+xml_df <- xmlToDataFrame(xml_data)
+
+# class(xml_df)
+# str(xml_df)
+# xml_df
+
+kable(xml_df, caption="My Favorite Books",row.names = FALSE, booktabs=TRUE)
+
+```
+
+<br><br><br>
+
+
+# JSON
+
+
+<br><br><br>
+<br>
+<font size="5" color="blue">  The JSON format looks like this. 
+<br>
+
+
+<pre> 
+{"books":[
+  { "title":"A Tree Grows in Brooklyn",
+   "authors" : [ "Betty Smith" ],
+   "year" : "1943",
+   "type" : "Fiction"
+    },
+    { "title":"R For Dummies",
+   "authors" : [  "Joris Meys", "Andrie de Vries" ],
+   "year" : "2014",
+   "type" : "Non Fiction"
+    },
+    { "title":"The Martian",
+   "authors" : [ "Andy Weir" ],
+   "year" : "2011",
+   "type" : "Fiction"
+    }
+ 
+]}
+ </pre> 
+
+<br><br><br>
+
+<br>  <font size="5" color="blue">  Download JSON file.  Parse into dataframe and display. </font>  <br>
+
+
+```{r json}
+
+
+json_file<-"https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/DATA607/MyFavoriteBooks.json"
+
+destfile<-paste0(CURR_PATH,"/books.json")
+download.file(json_file, destfile)
+json_data <- fromJSON(file = "books.json")
+
+# lets look at the structure
+# class(json_data)
+# str(json_data)
+
+
+json_df<-as.data.frame(do.call(cbind, json_data$books))
+json_df$V2<-as.character(json_df$V2)
+json_transposed_df<-t(json_df)
+
+kable(json_transposed_df, caption="My Favorite Books",row.names = FALSE, booktabs=TRUE)
+
+
+
+```
+
+<br><br><br>
