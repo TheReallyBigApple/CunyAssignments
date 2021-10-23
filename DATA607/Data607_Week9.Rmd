@@ -1,0 +1,296 @@
+---
+title: "Data607_Week9"
+author: "Tom Buonora"
+date: "October 23, 2021"
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+---
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(results=TRUE, echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
+```{r imports and constants, include=FALSE}
+
+library(tidyverse)         # ggplot2, dplyr, tidyr, readr, tibble, sringr and more
+library(knitr)
+library(rjson)
+library(kableExtra)
+
+CURR_PATH<-str_trim(getwd())
+
+```
+
+<br><br><br><br><br><br>
+
+<font size="7" color="purple">New York Times APIs : Best Selling Books </font>
+<br><br><br>
+
+# Overview
+<br><br>
+
+<font size="5" color="blue">  We will connect to the NY Times api and download data from their bestseller lists.
+<br><br><br>
+Then it will parse into a R data frame and display it.
+<br><br><br>
+
+
+The NYT Developer Network is [here](https://developer.nytimes.com/)
+
+
+
+<br><br><br><br><br>
+
+
+Retrieve api key and set list type. 
+
+</font>
+
+<br>
+```{r}
+# to set global and permanently, use "setx"
+nyt_api <- Sys.getenv("NYT_API")
+nyt_list_type<-"hardcover-fiction"
+
+
+```
+
+
+
+<br><br><br><br><br>
+
+# Mainline Code
+
+<br><br>
+
+<font size="5" color="blue">Retrieve data and convert the json into a list. </font>
+
+
+
+<br>
+
+
+```{r retrieve data}
+
+
+
+
+# the api allows many queries. This query is on the current best sellers in the category of Hardcover Fiction
+
+json_file<-sprintf("https://api.nytimes.com/svc/books/v3/lists/current/%s.json?api-key=%s", nyt_list_type, nyt_api)
+
+# to get all list names
+#         https://api.nytimes.com/svc/books/v3/lists/names
+
+# we could make this a shiny app with selectInput("ListType", "ListType:", c("business-books","hardcover-fiction" , "e-book-fiction" etc..
+ 
+
+
+destfile<-paste0(CURR_PATH,"/nyt_books.json")
+
+download.file(json_file, destfile)
+
+
+json_data <- fromJSON(file = "nyt_books.json")
+
+
+```
+
+
+<br><br><br><br><br><br>
+
+
+
+<blockquote>
+Note *json_data* is a list of 5.
+<br><br>
+Within it is results which is a list of 12.
+<br><br>
+Only then do we get to the list of books.
+<br><br>
+The first 4 elements of json_data and the first 11 elements of results only occur once. They are Meta details. 
+<br><br>
+We will print out some key details now.
+</blockquote>
+
+
+
+<br>
+
+
+```{r}
+
+meta_detail_df<-as.data.frame(cbind(list_name=json_data$results$list_name, 
+                                    published=json_data$results$published_date,
+                                    list_date=json_data$results$bestsellers_date,
+                                    update_freq=json_data$results$updated
+                                    ))
+              
+              
+
+
+kable(meta_detail_df , caption="Meta Details",row.names = FALSE, booktabs=TRUE, table.attr = "style='width:80%;'") %>%
+  kable_styling(font_size = 12)
+
+```
+
+<br><br><br><br><br><br>
+
+<font size="5" color="blue">Save off the Books list</font>
+<br>
+
+```{r}
+
+books_list<-json_data$results$books
+
+```
+
+
+<br><br><br><br><br><br>
+
+<font size="5" color="blue">  
+
+The actual list of books still contains sub-lists of isbns and buy site urls.
+
+So we will create 3 tables as a normalized database.
+
+***
+<ol>
+      <li>Book Details</li>
+      <li>Book ISBNs</li>
+      <li>Book Buy Links</li>
+</ol>
+***
+
+
+</font>
+
+<br>
+
+```{r create data frame schemas}
+
+
+book_details_df <- data.frame(
+  rank                =integer(),
+  rank_last_week      =integer(), 
+  weeks_on_list       =integer(), 
+  asterisk            =integer(), 
+  dagger              =integer(), 
+  primary_isbn10      =character(),
+  primary_isbn13     =character(),
+  publisher           =character(),
+  description         =character(),
+  price               =character(),
+  title               =character(),
+  author              =character(),
+  contributor        =character(),
+  contributor_note    =character(),
+  book_image          =character(),
+  book_image_width    =integer(),
+  book_image_height   =integer(),
+  amazon_product_url  =character(),
+  age_group           =character(),
+  book_review_link    =character(),
+  first_chapter_link  =character(),
+  sunday_review_link  =character(),
+  article_chapter_link = character(),
+  buy_uri= character()
+  )
+
+
+book_isbns_df <- data.frame(
+  title               =character(),
+  isbn10      =character(),
+  isbn13     =character()
+)
+  
+
+
+book_buy_links_df <- data.frame(
+  title               =character(),
+  name      =character(),
+  url     =character()
+)
+
+```
+
+
+<br><br><br><br><br><br>
+<font size="5" color="blue">Parse data into data frames.</font>
+<br>
+
+
+
+```{r parse data into data frames}
+
+for (item in books_list) {
+  book_details_df<-rbind(book_details_df,as.data.frame(item[-c(24, 25)]))
+  
+  for (isbn_item in item$isbns){
+    book_isbns_df<-rbind(book_isbns_df,as.data.frame(cbind(title=item$title, isbn10=isbn_item$isbn10,isbn13=isbn_item$isbn13  )))
+  }
+  
+  for (buy_link_item in item$buy_links){
+    book_buy_links_df<-rbind(book_buy_links_df,as.data.frame(cbind(title=item$title, name=buy_link_item$name,url=buy_link_item$url  )))
+  }
+  
+}
+
+```
+
+
+<br><br><br><br><br><br>
+
+<font size="5" color="blue">Print out some of the book details.</font>
+<br>
+```{r}
+
+some_of_the_book_details<-book_details_df[c("rank","title","author","weeks_on_list")]
+
+kable(some_of_the_book_details, caption="Best Seller List",row.names = FALSE, booktabs=TRUE) %>%
+  kable_styling(font_size = 10)
+
+```
+
+
+
+<br><br><br><br><br><br>
+<font size="5" color="blue">Print out the buy link details.</font>
+<br>
+```{r}
+
+kable(book_buy_links_df , caption="Best Seller Buy Links",row.names = FALSE, booktabs=TRUE, table.attr = "style='width:80%;'") %>%
+  kable_styling(font_size = 10)
+
+
+```
+
+
+<br><br><br><br><br><br>
+
+<font size="5" color="blue">Print out the ISBN details.</font>
+
+<br>
+
+```{r}
+
+kable(book_isbns_df , caption="Best Seller ISBN list",row.names = FALSE, booktabs=TRUE, table.attr = "style='width:50%;'") %>%
+  kable_styling(font_size = 12)
+
+
+```
+
