@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Tom Buonora and …" />
+
+<meta name="date" content="2021-10-24" />
+
+<title>Examples of tidyverse</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Examples of tidyverse</h1>
+<h4 class="author">Tom Buonora and …</h4>
+<h4 class="date">2021-10-24</h4>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)         <span class="co"># ggplot2, dplyr, tidyr, readr, tibble, sringr and more</span></span></code></pre></div>
+<div id="tidyverse-vignette" class="section level1">
+<h1>Tidyverse Vignette</h1>
+<div id="readr-read_csv" class="section level2">
+<h2>readr : read_csv()</h2>
+<p><br> read_csv is part of readr whereas read.csv is base R. Im not sure that read_csv is tidier than read.csv <br></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>CURR_PATH<span class="ot">&lt;-</span><span class="fu">str_trim</span>(<span class="fu">getwd</span>())</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># to do : use the kaggle api</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.kaggle.com/mysarahmadbhat/nyc-traffic-accidents</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># nyc_traffic_accidents&lt;-read.csv(&quot;NYC Accidents 2020.csv&quot;)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>nyc_traffic_accidents<span class="ot">&lt;-</span><span class="fu">read_csv</span>(<span class="st">&quot;https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/DATA607/NYC%20Accidents%202020.csv&quot;</span>,<span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+</div>
+<div id="readr-spec" class="section level2">
+<h2>readr : spec()</h2>
+<p>the spec function displays the schema for the data frame or tibble</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># the readr spec method shows you the schema</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span>(nyc_traffic_accidents)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; cols(</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `CRASH DATE` = col_date(format = &quot;&quot;),</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `CRASH TIME` = col_time(format = &quot;&quot;),</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   BOROUGH = col_character(),</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `ZIP CODE` = col_double(),</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   LATITUDE = col_double(),</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   LONGITUDE = col_double(),</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   LOCATION = col_character(),</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `ON STREET NAME` = col_character(),</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `CROSS STREET NAME` = col_character(),</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `OFF STREET NAME` = col_character(),</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `NUMBER OF PERSONS INJURED` = col_double(),</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `NUMBER OF PERSONS KILLED` = col_double(),</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `NUMBER OF PEDESTRIANS INJURED` = col_double(),</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `NUMBER OF PEDESTRIANS KILLED` = col_double(),</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `NUMBER OF CYCLIST INJURED` = col_double(),</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `NUMBER OF CYCLIST KILLED` = col_double(),</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `NUMBER OF MOTORIST INJURED` = col_double(),</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `NUMBER OF MOTORIST KILLED` = col_double(),</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `CONTRIBUTING FACTOR VEHICLE 1` = col_character(),</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `CONTRIBUTING FACTOR VEHICLE 2` = col_character(),</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `CONTRIBUTING FACTOR VEHICLE 3` = col_character(),</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `CONTRIBUTING FACTOR VEHICLE 4` = col_character(),</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `CONTRIBUTING FACTOR VEHICLE 5` = col_character(),</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   COLLISION_ID = col_double(),</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `VEHICLE TYPE CODE 1` = col_character(),</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `VEHICLE TYPE CODE 2` = col_character(),</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `VEHICLE TYPE CODE 3` = col_character(),</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `VEHICLE TYPE CODE 4` = col_character(),</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   `VEHICLE TYPE CODE 5` = col_character()</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; )</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="co"># this is base R, it removes the spaces from the column names</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(nyc_traffic_accidents) <span class="ot">&lt;-</span> <span class="fu">make.names</span>(<span class="fu">colnames</span>(nyc_traffic_accidents))</span></code></pre></div>
+</div>
+<div id="dplyr-group_by-dplyr_summarise-magrittr" class="section level2">
+<h2>dplyr : group_by() dplyr_summarise() magrittr : %&gt;%</h2>
+<p>magrittr provides several operators including the commonly used %&gt;% which pipes results from one function to the next</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>nyc_traffic_accidents <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(BOROUGH) <span class="sc">%&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">observations =</span> <span class="fu">n</span>(), <span class="at">killed =</span> <span class="fu">sum</span>(NUMBER.OF.PERSONS.KILLED, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 x 3</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   BOROUGH       observations killed</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                &lt;int&gt;  &lt;dbl&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 BRONX                 9417     10</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 BROOKLYN             16907     27</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 MANHATTAN             7353      9</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 QUEENS               14017     20</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 STATEN ISLAND         1446      6</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 &lt;NA&gt;                 25741     72</span></span></code></pre></div>
+</div>
+<div id="dplyr-select" class="section level2">
+<h2>dplyr : select()</h2>
+<p>select can select certain columns select can also omit certain columns. Below I omit a sequence of columns starting with LATTITUDE and ending with LOCATION</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>nyc_traffic_accidents<span class="ot">&lt;-</span>nyc_traffic_accidents <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">!</span>(LATITUDE<span class="sc">:</span>LOCATION))</span></code></pre></div>
+</div>
+<div id="dplyr-muatate-replace_na" class="section level2">
+<h2>dplyr : muatate() replace_na()</h2>
+<p>muate() can create or modify a column replace_na() can replace all instances of NA with a specified value</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>nyc_traffic_accidents<span class="ot">&lt;-</span>nyc_traffic_accidents <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">BOROUGH =</span> <span class="fu">replace_na</span>(BOROUGH, <span class="st">&quot;NYC&quot;</span>))</span></code></pre></div>
+</div>
+<div id="ggplot-geom_histogram-et-all." class="section level2">
+<h2>ggplot : geom_histogram() et all.</h2>
+<p>while the other tidyverse packages infer data parsing, ggplot exists to <em>display</em> data having said that, its robust functionality includes data shaping. The histogram is essentially a group_by() as is scale_x_dates</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> nyc_traffic_accidents, <span class="fu">aes</span>(<span class="at">x =</span> CRASH.DATE)) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_histogram</span>() <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">60</span>, <span class="at">hjust=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggtitle</span>(<span class="st">&quot;Accidents Per Day&quot;</span>) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">&quot;weeks&quot;</span>, <span class="at">date_labels =</span> <span class="st">&quot;%Y-%m-%d&quot;</span>) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">xlab</span>(<span class="st">&quot;Date&quot;</span>) </span></code></pre></div>
+<p><img src="data:image/png;base64,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3R/lf3uv5NC6FakrAyboasODdApweX/R8rs/Vv+dMwAoIM0ZAAFACWEF4DsAKCesADenx8vbP/UfCAB6CCsAzwFAOeEE6AIBQAEIAKZBADANAoBpEABMgwBgGgQA0yAAmAYBwDQIAKZBADANAoBpEABMgwBgGgQA0yAAmAYBwDQIAKZBADANAoBpEABMgwBgGgQA0yAAmAYBwDQIAKZBADANAoBpEABMgwBgGgQA0yAAmAYBwDQIAKZBADANAoBpEABMgwBgGgQA0yAAmAYBwDQIAKZBADANAoBpEABMgwBgGgQA0yAAmAYBwDQIAKZBADANAoBpEABMgwBgGgQA0yAAmAYBwDQIAKZBADANAoBpEABMk06ALlJXBkwwqEc5A8DU4RIITIMAYBoEANMgAJgGAcA0CACmQQAwDQKAaRAATIMAYBoEANMgAJgGAcA0CACmQQAwDQKAaRAATIMAYBoEANMgAJgGAcA0CACmQQAwDQKAaRAATIMAYBoEANMgAJgGAcA0CACmQQAwDQKAaRAATIMAYBoEANMgAJgGAcA0CACmQQCAfRAATIMAYBoEANMgAJgGAcA0CACmQQAwDQKAaRAATIMAYBoEANMgAJgGAcA0CACmQQAwDQKAaRAATIMAYBoEANMgAJgGAcA0CACmQQAwTSgBrh8f3X+FAKCdQALcnJ4U5w8QALQTSIDrz8+Kq0/PEACUE0iAq0eviuvPnpZL75X0WxdAHz0FuLy/FqCi6wzguTBs7dEXSKE2zojbEwqwPQMggIUUyuKkF6Dfd4D4h5VPHB0plMVJL8DN6XGPu0DxDyufODpSKIuTXoB+zwHiH1Y+cXSkUBZHgQA7zHvuNPxh5RNHRwplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcRBgYlWefAplcbQJsKH590SLRkbaTBZxqEWMOAigNg61iBEHAdTGoRYx4owlAMBE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" /><!-- --></p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

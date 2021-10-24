@@ -1,0 +1,129 @@
+---
+title: "Examples of tidyverse"
+author: "Tom Buonora and ..."
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Tidyverse Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+   warning = FALSE, 
+  message = FALSE,
+  fig.width = 8,
+  fig.height = 8
+)
+```
+
+```{r}
+
+library(tidyverse)         # ggplot2, dplyr, tidyr, readr, tibble, sringr and more
+
+```
+
+
+# Tidyverse Vignette
+
+
+
+
+##   readr : read_csv()
+
+<br>
+read_csv is part of readr whereas read.csv is base R. Im not sure that read_csv is tidier than read.csv
+<br>
+
+```{r readr : read_csv}
+CURR_PATH<-str_trim(getwd())
+
+
+# to do : use the kaggle api
+# https://www.kaggle.com/mysarahmadbhat/nyc-traffic-accidents
+
+# nyc_traffic_accidents<-read.csv("NYC Accidents 2020.csv")
+
+nyc_traffic_accidents<-read_csv("https://raw.githubusercontent.com/TheReallyBigApple/CunyAssignments/main/DATA607/NYC%20Accidents%202020.csv",show_col_types = FALSE)
+
+
+```
+
+##   readr : spec()
+
+the spec function displays the schema for the data frame or tibble
+
+```{r readr : spec}
+
+# the readr spec method shows you the schema
+spec(nyc_traffic_accidents)
+
+
+# this is base R, it removes the spaces from the column names
+colnames(nyc_traffic_accidents) <- make.names(colnames(nyc_traffic_accidents))
+
+```
+
+##   dplyr : group_by()    dplyr_summarise()     magrittr : %>%
+
+magrittr provides several operators including the commonly used %>% which pipes results from one function to the next
+
+```{r several}
+
+
+nyc_traffic_accidents %>%
+  group_by(BOROUGH) %>%
+  summarise(observations = n(), killed = sum(NUMBER.OF.PERSONS.KILLED, na.rm = TRUE))
+
+
+```
+
+##   dplyr : select()
+
+select can select certain columns
+select can also omit certain columns. 
+Below I omit a sequence of columns starting with LATTITUDE and ending with LOCATION
+
+```{r dplyr select}
+
+nyc_traffic_accidents<-nyc_traffic_accidents %>% 
+    select(!(LATITUDE:LOCATION))
+
+```
+
+##   dplyr : muatate()   replace_na()
+
+muate() can create or modify a column
+replace_na() can replace all instances of NA with a specified value
+
+```{r replace_na}
+
+nyc_traffic_accidents<-nyc_traffic_accidents %>% dplyr::mutate(BOROUGH = replace_na(BOROUGH, "NYC"))
+
+```
+
+
+##   ggplot :  geom_histogram() et all.
+
+while the other tidyverse packages infer data parsing, ggplot exists to *display* data
+having said that, its robust functionality includes data shaping. The histogram is essentially a group_by()
+as is scale_x_dates
+
+```{r ggplot histogram}
+
+
+ggplot(data = nyc_traffic_accidents, aes(x = CRASH.DATE)) +
+geom_histogram() +
+theme(axis.text.x=element_text(angle=60, hjust=1)) +
+ggtitle("Accidents Per Day") +
+scale_x_date(date_breaks = "weeks", date_labels = "%Y-%m-%d") +
+xlab("Date") 
+
+
+
+```
+
+
