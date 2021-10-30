@@ -1,0 +1,730 @@
+---
+title: "Data607_Week10"
+author: "Tom Buonora"
+date:  "`r Sys.Date()`"
+link-citations: true
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+---
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(results=TRUE, echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
+```{r imports and constants, include=FALSE}
+
+library(tidyverse)         # ggplot2, dplyr, tidyr, readr, tibble, sringr and more
+library(knitr)
+library(kableExtra)
+library("gridExtra")       # for grid.arrange
+
+CURR_PATH<-str_trim(getwd())
+
+```
+
+<br><br><br><br>
+
+<font size="7" color="purple">Sentiment analysis</font>
+<br><br><br>
+
+
+
+```{r import text mining packages}
+
+library(wordcloud)
+library(reshape2)
+library(janeaustenr)
+library(tidytext)
+library(lexicon)
+
+```
+
+
+
+# Analysis of Jane Austin
+
+
+
+<br><br>
+
+The Jane Austen analysis is reproduced courtesy of <a name=cite-loh></a><a href="#bib-loh"> ORiely : Text Mining With R</a>.
+
+Licensed under a **Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States License**
+
+<br><br>
+
+## Text Mining with R : Chapter 2  
+
+
+<br><br>
+
+<font size="5" color="blue">  We will use 3 general purpose sentiment lexicons</font>
+
+<br>
+```{r}
+
+afinn_words<-get_sentiments("afinn")       # words ranked from +5 to -5
+
+bing_words<-get_sentiments("bing")         # words are just negative and positive
+
+nrc_words<-get_sentiments("nrc")    ## words are categorized, anger, fear, etc..
+
+nrc_words %>%
+  group_by(sentiment) %>%
+  summarize(n())
+
+
+```
+
+
+
+
+<br><br>
+
+<font size="5" color="blue">The *unest_tokens* function parses out each word into seperate rows so we can aggregate by specific words. </font>
+
+
+
+<br>
+
+ ungroup "ungroups" but what it really does is take the summary data and maps them to the original table
+   so every one of the 73K lines in the books gets a line# and a chapter
+unnest_tokens parses each word in the text column and creates a word column turninging 73K records to 725K
+
+<br>
+
+```{r}
+
+
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+
+
+
+
+
+
+```
+
+
+
+<br><br>
+
+<font size="5" color="blue">The tidy_books data frame now contains 6 books with a seperate record for every word in it. </font>
+
+<br>
+
+```{r}
+tidy_books %>%
+  group_by(book) %>%
+  summarize(n())
+```
+
+
+<br><br>
+
+<font size="5" color="blue">Populate the nrc_joy dataframe which contains the words associated with joy. </font>
+
+
+
+<br>
+
+
+```{r}
+
+
+# get the "joy" words
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+
+```
+
+
+
+<br><br>
+<font size="5" color="blue">Populate the nrc_joy dataframe which contains the words associated with joy. </font>
+<br>
+
+
+
+```{r}
+
+# count the number of joy words in the book "Emma"
+tidy_books %>%
+  filter(book == "Emma") %>%
+  inner_join(nrc_joy) %>%
+  count(word, sort = TRUE)
+
+```
+
+
+
+
+
+
+<br><br>
+<font size="5" color="blue">Transform tidy_books + bing sentiments. 
+<br>
+Create a new field called index to break up the books into sections.
+<br>
+Use pivot_wider to transform the data. </font>
+
+
+<br>
+tidy_books look like this
+<br>
+
+
+
+  Book                | line   |  chapter      |  word
+-------------- -----  | -----  | -----------   | ------
+ Sense & Sensibility  | 1      | 0             | sense
+ Sense & Sensibility  | 1      | 0             | and
+ Sense & Sensibility  | 1      | 0             | sensibility
+
+ 
+<br>
+The count function is adding an index column that represents an arbitrary section of 80 lines
+<br>
+
+
+  Book                | index  | sentiment   |  count
+ -------------------  | -----  | ----------- | ------
+ Sense & Sensibility  | 73     | negative    | 29
+ Sense & Sensibility  | 73     | positive    | 21
+
+
+<br> 
+ pivot wider turns it to this
+<br>
+
+   Book              | index  |  negative    |  positive
+ -------------------  | -----  | ----------- | ---------
+ Sense & Sensibility  | 73     | 29          | 21
+
+ <br>
+ 
+```{r}
+
+
+jane_austen_sentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+
+
+
+
+
+```
+
+
+
+
+<br><br><br><br>
+<font size="5" color="blue">Parse data into data frames.</font>
+<br>
+
+
+
+```{r parse data into data frames}
+
+
+ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+
+
+
+
+
+```
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Display a Bar Chart using *geom_col* to aggregate values, i.e. the miss record appears once with a value of 1855.</font>
+<br>
+
+
+Brief review of bar chars
+- geom_col uses stat_identity(), i.e. it leaves data as it is to aggregate values, used for categorical data
+- geom_bar() uses stat_count() and plots counts of categorical data 
+- histograms plot counts of continuous variables categorized in bins
+
+```{r}
+
+
+
+
+
+
+bing_word_counts <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(x = "Contribution to sentiment",
+       y = NULL)
+
+```
+
+
+
+<br><br><br><br>
+<font size="5" color="blue">Bind the rows with the stop_words dataset. Then do an "anti_join" to remove them.</font>
+<br>
+Word Clouds (also known as wordle, word collage or tag cloud) are visual representations of words that
+give greater prominence to words that appear more frequently.
+
+```{r}
+
+
+# stop words is a data set in the tidytext package 
+# A data frame with 1149 rows and 2 variables:
+custom_stop_words <- bind_rows(tibble(word = c("miss"),  
+                                      lexicon = c("custom")), 
+                               stop_words)
+
+
+tidy_books %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+
+
+
+```
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">The acast function is part of the reshape2 package, which is just a newer version of the reshape package.</font>
+
+<br>
+
+acast and dcast are related functions to cast the data into arrays or dataframes.
+<br>
+comparison.cloud is part of the wordcloud package and compares the word frequency among to data sets.
+<br>
+In this case the sentiment field is either positive or negative.
+<br>
+
+
+```{r}
+
+
+
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+
+
+```
+
+
+
+
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Moving on to Sentences.</font>
+
+<br>
+
+Print out a couple of example sentences to show what unnest_tokens did.
+
+<br>
+
+```{r}
+
+
+#  prideprejudice is a dataset included in the janeaustenr package
+
+p_and_p_sentences <- tibble(text = prideprejudice) %>% 
+  unnest_tokens(sentence, text, token = "sentences")
+
+
+for (i in 140:144) {
+  print(p_and_p_sentences$sentence[i])
+}
+
+
+```
+
+
+
+
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Use unnest_tokens to group within a regex (the chapters).</font>
+
+<br>
+note: austen_books() is just text and book
+<br>
+
+```{r}
+
+
+
+
+
+austen_chapters <- austen_books() %>%
+  group_by(book) %>%
+  unnest_tokens(chapter, text, token = "regex", 
+                pattern = "Chapter|CHAPTER [\\dIVXLC]") %>%
+  ungroup()
+
+austen_chapters %>% 
+  group_by(book) %>% 
+  summarise(chapters = n())
+
+
+```
+
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Isolate the counts of negative words only and display the ratios to the overall word counts</font>
+
+<br>
+
+
+```{r}
+
+
+
+
+
+bingnegative <- get_sentiments("bing") %>% 
+  filter(sentiment == "negative")
+
+wordcounts <- tidy_books %>%
+  group_by(book, chapter) %>%
+  summarize(words = n())
+
+tidy_books %>%
+  semi_join(bingnegative) %>%
+  group_by(book, chapter) %>%
+  summarize(negativewords = n()) %>%
+  left_join(wordcounts, by = c("book", "chapter")) %>%
+  mutate(ratio = negativewords/words) %>%
+  filter(chapter != 0) %>%
+  slice_max(ratio, n = 1) %>% 
+  ungroup()
+
+```
+
+
+
+
+
+
+
+
+<br><br><br><br>
+
+
+# Analysis of Ernest Hemingway
+
+
+<font size="5" color="blue">In this section we will download a book from the Gutenberg project. 
+
+<br>
+
+We will look at Ernest Hemingway's first book.</font> [In our Time](https://en.wikipedia.org/wiki/In_Our_Time_(short_story_collection))
+
+<br>
+
+
+<font size="5" color="blue">Its not a perfect comparison. I chose Hemingway because I have some thoughts about his style.
+
+<br>
+
+Lets acknowledge the differences in our authors.</font>
+
+
+
+
+
+Author              | Nationality     |  Born  | Died   |  Sample Size
+-----------------   | -------------   | ------ | ------ | -------------
+Jane Austen         | English         |  1775  |  1817  |  6 Books
+Ernest Hemingway    | American        |  1899  |  1961  |  1 Book
+ 
+
+
+
+
+<font size="5" color="blue">We will use the lexicon package and run several comparisons between Austen and Hemingway.</font>
+<br>
+Most of the datasets seeme to be more appropriate for modern usage.
+<br>
+
+
+```{r}
+
+kable(lexicon::available_data() , caption="lexicon datasets",row.names = FALSE, booktabs=TRUE, table.attr = "style='width:80%;'") %>%
+  kable_styling(font_size = 8)
+
+```
+
+<br>
+<font size="5" color="blue">The action verb dataset is a good one for our purposes.</font>
+<br>
+```{r}
+
+verbs_df<-data.frame(word=pos_action_verb)
+
+```
+
+
+
+<br>
+
+
+<br><br><br><br><br>
+
+<font size="5" color="blue">Download data</font>
+
+<br>
+
+
+```{r}
+
+
+
+
+destfile<-"hemingway.txt"
+
+url <- "https://www.gutenberg.org/files/61085/61085-0.txt"
+
+raw_text <-read.fwf(url, width=1000 )
+raw_text2 <- na.omit(raw_text)
+colnames(raw_text2)<-"V1"
+raw_text3<-data.frame(gsub("[^\x20-\x7E]", "", raw_text2$V1))
+
+
+
+hemmingway_df <- data.frame(
+  text     =character()
+)
+
+```
+
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Tidy the Data.</font>
+
+<br>
+
+
+ The Hemingway file has a lot of non ascii characters, and blank lines and extra verbiage.
+
+  <br>
+
+```{r}
+
+
+keep=0
+
+
+
+for(i in 1:nrow(raw_text3)) {     
+
+  
+  if (str_detect(raw_text3[i,], "Here ends _The Inquest_")) {  # end here
+    keep=0
+  }
+  
+  
+  if (keep==1) {
+    hemmingway_df<-rbind(hemmingway_df,as.data.frame(raw_text3[i,]))
+  }
+  
+  
+  if (str_detect(raw_text3[i,], "chapter 1")) {   # start here
+    keep=1
+  }
+
+}
+
+
+colnames(hemmingway_df)<-"text"
+ 
+```
+
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Seperate the words in rows.</font>
+
+<br>
+
+```{r}
+
+
+hemmingway_words_df <- hemmingway_df %>%
+  unnest_tokens(word, text)
+
+```
+
+
+
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Isolate the 20 most common verbs from both authors.</font>
+
+<br>
+
+
+```{r}
+
+
+
+verb_count_eh<-hemmingway_words_df %>%
+  inner_join(verbs_df) %>%
+  count(word, sort = TRUE) %>%
+  ungroup() %>%
+  head(n=20)
+
+
+verb_count_ja<-tidy_books %>%
+  inner_join(verbs_df) %>%
+  count(word, sort = TRUE) %>%
+  ungroup() %>%
+  head(n=20)
+
+
+```
+
+
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Display the verb counts side by side.</font>
+
+<br>
+
+
+```{r}
+
+
+
+plot1<-verb_count_ja %>% ggplot(aes(y=word, x=n)) +
+  geom_bar(stat='identity', color = "#112446", fill="#ffffff") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  labs(title='Jane Austen')
+
+
+
+plot2<-verb_count_eh %>% ggplot(aes(y=word, x=n)) +
+  geom_bar(stat='identity', color = "#112446", fill="#ffffff") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  labs(title='Ernest Hemingway')
+
+grid.arrange(plot1, plot2, ncol = 2)
+
+```
+
+
+I would expect the themes of romance and war to be juxtaposed here. Its interesting to see think, hope and wish on the left
+and words like kill, face and forward on the right.
+
+
+<br><br><br><br>
+
+<font size="5" color="blue">Extra question.</font>
+
+<br>
+
+I've always admired Hemingway for his simple prose. Id like to compare the length of his words to those of Jane Austen.
+<br>
+
+```{r}
+
+mean(nchar(hemmingway_words_df$word))
+mean(nchar(tidy_books$word))
+
+```
+
+
+
+Notes:
+This is an interesting baseline to explore the evolution of the language of literature over time.
+<br>
+Having only one short book by Hemingway is not sufficient but it was the only Hemingway book that I could find.
+<br>
+miss and man show up as verbs. Im pretty sure they are mostly not verbs.
+
+
+
+
+
+
+
+
+
+
+
+# Links
+
+
+[Great R Packages for NLP](https://analyticsindiamag.com/top-10-r-packages-for-natural-language-processing-nlp/)
+
+
+[20 Open Datasets for NLP](https://medium.com/@ODSC/20-open-datasets-for-natural-language-processing-538fbfaf8e38)
+
+
+
+# References
+
+
+<p><a name=bib-loh></a><a href="#cite-loh">[7]</a> Julia Silge and David Robinson. &ldquo; Welcome to Text Mining with R &rdquo;. ORiely </p>
