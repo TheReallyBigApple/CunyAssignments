@@ -1,0 +1,167 @@
+---
+title: "Data607_Week10"
+author: "Tom Buonora"
+date:  "`r Sys.Date()`"
+link-citations: true
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+---
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(results=TRUE, echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
+<br><br>
+
+<font size="7" color="purple">Recommender System</font>
+<br><br><br>
+<font size="5" color="black">Amazon Music Unlimited</font>
+
+
+<br><br>
+
+***
+# Overview
+***
+
+
+<br><br>
+
+Amazon Music Unlimited is a service that charges a monthly fee of 10 dollars ( or 8 for Prime members ).
+<br>
+Its home page consists of a main banner entitled *My Likes and More* and underneath that, 4 ribbons 
+consisting of 7 ablums, which the user can scroll left and right to see more.
+<br>
+<center><img src="C:\Users\arono\source\R\Data607\amu.JPG" width="400"  height="300"></center>
+
+<br><br>
+
+***
+# Recommendations
+***
+<br>
+
+The recommender system needs to decide on what banner to show, what themes for the ribbons, 
+and then what albums specifically to offer inside the ribbons.
+
+<br>
+
+Note, the user can scroll down to see even more banners and ribbons, including 
+"New Releases For You", "Albums for You", "Ultra HD Albums" and many others.
+
+  
+
+
+<br><br>
+
+
+***
+# Scenario Design
+***
+
+<br><br>
+
+**Who are your target users ?**
+<br>
+&emsp;&emsp; Music lovers. Specifically those who would want to purchase a music service and never cancel. 
+	
+
+**What are their key gaols ?**
+<br>
+&emsp;&emsp; To explore. There is a certain buzz to exploring music.
+	They also want to discover new music that they love.
+
+**How can you help them accomplish their goals?**
+<br>
+&emsp;&emsp; The web site should be fun. It should help the music lover find that buzz.
+	
+	
+<br><br>
+
+***
+# Reverse Engineering
+***
+
+<br><br><br><br>
+
+
+
+I think Amazon has a nigthly offline-generated list of albums with a calculated, numerical factor for each category.
+<br><br>
+For example, "You might like" and "Albums for You", based on similar customers (collaborative) , 
+		and similar music choices (search-based methods) would produce a list of 500 recommended albums,
+		order by the most recommended to least recommended.
+<br><br>
+	The degree of recommended is represented by a calculation using many factors including ...
+<br><br>
+
+
+
+<ol>
+		<li>User history of clicking on new recommendations</li>
+		<li>User history of clicking on old recommendations</li>
+		<li>User history of playing music in entirety</li>
+		<li>User history of playing music partially</li>
+		<li>Similar User history of clicking on recommendations</li>
+		<li>Similar User history of playing music in entirety</li>
+		<li>Similar user history of playing music partially</li>
+		<li>User history of Variety across disparate genres</li>
+		<li>User history of Variety across musical eras</li>
+</ol>
+
+
+<br><br>
+	The algorithm would return factors that yield a probability matrix
+	to determine the likelhood of ...
+<br><br>
+
+<ol>
+		<li>Changing the recommended albums (how often)</li>
+    <li>Changing the ribbon titles (how often)</li>
+    <li>The genres of the recommendations</li>
+    <li>The specific albums</li>
+</ol>
+
+<br><br>
+Its important to point out. The recommendations dont need to change every day.
+The consumer may stare at a recommendation for a week and get *convinced* to
+click on it and enjoy it.
+<br><br>
+
+Lastly, the randomizer will select 8 albums from the large list, using a probability function that
+		uses the factors to randomly select the recommendations.
+
+
+
+<br><br>
+
+
+***
+# Suggestions
+***
+
+I would suggest gap analysis, for example to gratify a consumer with a history of listenging to 70s, 80s and current,
+offer the 90s and 00s under the same genres.
+
+I would also suggest focused surveys with target consumers to help validate your interpretation of the results.
+
+
+	
+
+<br><br>
