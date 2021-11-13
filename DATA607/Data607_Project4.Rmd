@@ -1,0 +1,559 @@
+---
+title: "Data607_Project4"
+author: "Tom Buonora"
+date:  "`r Sys.Date()`"
+link-citations: true
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+---
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(results=TRUE, echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+
+```{r imports and constants, include=FALSE}
+
+library(tidyverse)         # ggplot2, dplyr, tidyr, readr, tibble, sringr and more
+library(knitr)
+library(kableExtra)
+library("gridExtra")       # for grid.arrange
+
+CURR_PATH<-str_trim(getwd())
+
+```
+
+<br><br>
+
+<font size="6" color="purple">Document Classification : Emails</font>
+<br><br><br>
+
+
+
+
+<br><br>
+
+***
+# Overview
+***
+
+
+<br><br>
+
+The **Ham or Spam** classification problem is a common and ongoing pursuit in the academic and professional world.
+
+<br><br>
+
+There are several approaches that one can explore, and there are many references available to review.
+
+
+<br><br>
+
+For example, Mala Deep wrote an article on *Towards Data Science*, and he offers the following algorithms.<a name=cite-one></a><a href="#bib-one">&#91;1&#93; </a>. Mala researched the various methods and reported the following accuracies:
+
+<br><br>
+
+Algorithm                    | Accuracy (%)
+---------------------------  | -------------
+Bagging Classification       | .9736     
+Random Forest Classification | .9796
+Naive Bayes  Classification  | .9826     
+Extra Tree Classification    | .9820 
+SVM Classification           | .8343  
+KNN Classification           | .8606
+Decision Tree Classification | .9730
+
+<br><br>
+
+
+Deepal Dsilva uses the naiveBayes() function from the e1071 R package to train her classifier. <a name=cite-three></a><a href="#bib-three">&#91;3&#93; </a>
+
+<br><br>
+
+
+
+Tejan Kermali also wrote a *Towards Data Science* article on how to use Python to employ the TDF-IDF and BOW algorithms in Python
+<a name=cite-two></a><a href="#bib-two">&#91;2&#93; </a>.
+
+<br><br>
+
+Mandy Gu also wrote a *Towards Data Science* python article which is quite excellent. <a href="#bib-five">&#91;5&#93; </a>
+
+
+<br><br>
+
+***
+# Classification
+***
+
+<br><br>
+
+There are many articles about classifications algorithms. 
+
+<br><br>
+
+I will discuss what Tejan Kermali did in his  *Towards Data Science* article and specifically his Bag of Words algorithm in python  <a name=cite-six></a><a href="#bib-six">&#91;6&#93; </a>.
+
+<br><br>
+
+After documenting the classifier I will demonstrate it in an R implmentation.
+
+<br><br>
+
+## Bag of Words Algorithm
+
+<br><br>
+
+The algorithm calculates the probabilities that the message is Spam or Ham and ultimately returns.
+<br><br>
+
+
+$$
+Ham \ Or \ Spam \ = \ \begin{cases}
+P(spam) \geq P(ham) | Spam )  \\
+P(spam) \lt P(ham) | Ham )  \\
+\end{cases}
+$$
+<br><br>
+
+Both probabilities is accumulated in 2 phases
+
+<br><br>
+
+## Phase 1 The Frequencies:
+
+<br><br>
+In the first part, we loop through each word and adjust the accumulated probability based on the frequency probability of that word.
+<br><br>
+
+Before we begin, we should take note of what a word is
+
+**The Words:**
+
+We may optionally decide to do the following :
+
+<ol>
+      <li>Remove Stop Words, i.e. words like "a" and "the". They dont add meaning for us</li>
+      <li>Remove numbers</li>
+      <li>Remove punctuation marks.</li>
+      <li>Reduce all alphabetic characters to lower case</li>
+</ol>
+
+
+<br><br>
+
+Tejan decided to combine words to improve conceptual integrity. Individual words often
+have less meaning than combined words.
+<br><br>
+Thus every message is parsed into a rolling series of 2 words, that is
+
+<br><br>
+<blockquote>Call me when you get a chance.</blockquote>
+<br><br>
+is fed into the classifier as 
+<br><br>
+<blockquote> "Call me", "me when", "when you", "you get", "get a", "a chance"</blockquote>
+<br><br>
+
+Each 2-word phrase performs a lookup into the spam training datasets and the Ham dataset.
+
+<br><br>
+
+**The Process:**
+
+<br><br>
+
+When I ran the simulation, the phrase "mobile number" was  found significantly more in the Spam mail training data:
+
+<br><br>
+
+Dataset      |  Words   |   "mobile phone"  |  Frequency 
+------------ | -------  | ----------------- | ------------
+Ham          | 112,310  |      11           |    .0001
+Spam         | 32,581   |      13           |    .0004
+
+
+<br><br>
+
+For each phrase *w* the overall P(spam) is adjusted by the following :
+
+<br><br>
+$$Spam \ Freq(w) \ = \ \frac{s(w)}{s})$$
+
+<br><br>
+$$P(spam) \ += \ log(SpamFreq(w))$$
+
+
+Where
+
+s(w) = # ocuurencies of word w in spam dataset
+s = # words in spam dataset
+
+
+For each phrase *w* the overall P(ham) is adjusted by the following :
+
+<br><br>
+$$HamFreq(w) \ = \ \frac{h(w)}{h})$$
+
+
+
+
+<br><br>
+
+Thus "mobile number" adjusts P(ham) and P(spam) as follows :
+
+
+Probability  |  Freq    |  log(Freq) |  Adjustment 
+------------ | -------  | ---------- | ------------
+Ham          |  .0001   |   -9.1106  |    -9.1106
+Spam         |  .0004   |   -7.8866  |    -7.8866
+
+<br><br>
+
+This makes some intuitive sense.
+
+<br><br>
+
+Since the log of the lower frequency is less than
+the log of the higher frequency, it infers the probability of it being 
+spam is greater.
+
+<br><br>
+
+*But what if the test data phase isnt in the training data set ?*
+
+<br><br>
+
+That happens a lot actually. 
+
+<br><br>
+
+In that case we default to the following:
+
+
+<br><br>
+$$P(Spam) \ += \ \log(AllSpamWords)$$
+$$P(Ham) \ += \ \log(AllHamWords)$$
+
+These adjustments are the same no matter the word, in my simulation these were :
+
+<br><br>
+
+
+Probability  |  Words  |  Phrases   |  Sum     |  Log(Sum) | Adjustment 
+------------ | ------- | ---------- | -------  | --------- | -----------
+Ham          |  9954   |  8147      |  18101   |  9.803    |  -9.803
+Spam         |  2981   |  2342      |   5323   |  8.579    |  -8.5797
+
+<br><br>
+Thus, any word that does not appear in Ham, the P(ham) will be adjusted down by 9.903. Not being in ham makes it suspicious i guess.
+<br><br>
+
+<font color="purple"> Note: This method of equating the negative natural log of large numbers to the positive natural log of small numbers
+may seem inappropriate at first, but in both cases the results are fairly contained between 5 and 10,
+and its an ok model to track the frequency of words as it pertains to the spam dataset vs. the ham data set</font>
+
+<br><br>
+
+
+
+
+<br><br><br><br>
+
+
+## Phase 2 The Blanket Adjustment:
+
+<br><br>
+Each email gets a blanket adjustment as follows.
+<br><br>
+
+                    
+
+Probability  | SubTotal  |  Total   |   Prob   |  log(Prob)
+------------ | --------  | -------- | -------  | -----------
+Ham          |   1041    |   1200   |  .8675   |   -0.142
+Spam         |    159    |   1200   |  .1325   |   -2.021
+
+
+<br><br>
+
+Thus every email gets a P(ham) bump over P(spam) by almost 2.
+<br><br>
+This puts the burden of P(spam) to have several phases that have a high
+frequency within the train dataset.
+<br><br>
+
+
+
+# Demonstration in R
+
+<br><br>
+
+The following code uses the same data and demonstrates the Classification algorithm.
+
+<br><br>
+First read in the data.
+<br><br>
+```{r read in data}
+
+py_path<-'C:\\Users\\arono\\source\\R\\Data607\\'
+py_file<-'spam_test.csv'
+py_csv<-paste0(py_path,py_file)   # paste0 to omit the space
+
+py_csv_df<-read.csv(py_csv)
+
+# paste together the columns broken up by the commas
+py_csv_df<-py_csv_df %>% mutate(text=paste0(v2,X,X.1,X.2))
+
+py_csv_df<-py_csv_df %>% select(c("v1","text"))
+
+names(py_csv_df)<-c("type","text")
+
+```
+
+<br><br>
+Remove all numbers and punctuation marks.
+<br><br>
+```{r}
+
+
+# remove numbers and many punctuation marks
+py_csv_df$text<-gsub("[[:punct:]]", "", py_csv_df$text)
+py_csv_df$text<-gsub("[0-9]", "", py_csv_df$text)
+```
+
+<br><br>
+Tokenize it to words. Remove the most common stop words.
+<br><br>
+
+```{r tokenize}
+
+
+library(tidytext)
+library(tm)
+
+stop_df<-data.frame(stopwords())
+names(stop_df)<-c("word")
+
+
+
+py_words_df<- py_csv_df %>%
+  unnest_tokens(word, text)
+
+# remove stop words
+py_words_df <- py_words_df %>%
+  anti_join(stop_df, by = "word")
+```
+
+
+
+<br><br>
+Calculate the pct of spam and ham mail. We need this later for the Classify function.
+<br><br>
+
+
+```{r}
+total_msgs<-nrow(py_csv_df)
+total_ham_msgs<-  py_csv_df %>% filter(type == 'ham')  %>%  count() 
+total_spam_msgs<-  py_csv_df %>% filter(type == 'spam')  %>%  count() 
+pct_ham<-total_ham_msgs/total_msgs
+pct_spam<-total_spam_msgs/total_msgs
+
+print(paste("Total Messages      ", total_msgs))
+print(paste("Total Spam Messages ", total_spam_msgs))
+print(paste("Total Ham Messages  ", total_ham_msgs))
+print(paste("The pct of ham is   ", pct_ham))
+print(paste("The pct of spam is  ", pct_spam))
+
+```
+
+
+
+
+<br><br>
+Calculate frequencies.
+<br><br>
+
+```{r word frquency}
+
+py_word_freq_df <-py_words_df %>%
+  group_by(type, word) %>%
+  summarise(freq = n()  )
+
+
+
+words_in_ham<-py_words_df %>%	  filter(type == 'ham')  %>%  count() 
+words_in_spam<-py_words_df %>%	  filter(type == 'spam')  %>%  count()
+
+
+
+py_ham_word_freq_df <-py_word_freq_df  %>%   filter(type == 'ham')
+py_spam_word_freq_df <-py_word_freq_df  %>%   filter(type == 'spam')
+
+py_ham_word_freq_df <- py_ham_word_freq_df %>% mutate(freq_pct=freq/words_in_ham[1,1])
+
+py_spam_word_freq_df <- py_spam_word_freq_df %>% mutate(freq_pct=freq/words_in_spam[1,1])
+
+```
+
+<br><br>
+Define the Classify function mimicing Tejans implemetation.
+<br><br>
+
+
+```{r Classify}
+
+Classify<- function(msg) {
+  
+msg_words<- strsplit(msg," ")
+
+pSpam=0
+pHam=0
+
+for (w in msg_words[[1]]) {
+  w_f<-py_spam_word_freq_df %>%  filter(word == w)
+  
+  if (nrow(w_f) == 1) {
+    adj<-log(w_f[1,'freq_pct'])
+    pSpam=pSpam+adj
+    print(paste(w, " found in Spam with frequency ", sprintf("%.4f", w_f[1,'freq_pct']) , " adjusting by ", sprintf("%.4f",adj)))
+  } 
+  else
+  {
+    adj<-log(words_in_spam[1,1])
+    pSpam=pSpam-adj
+    print(paste(w, " not Found in Spam : adjusting by ", sprintf("%.4f", -1 * adj)))
+  }
+  
+
+
+}
+
+
+for (w in msg_words[[1]]) {
+  w_f<-py_ham_word_freq_df %>%  filter(word == w)
+  
+  if (nrow(w_f) == 1) {
+    adj<-log(w_f[1,'freq_pct'])
+    pHam=pHam+adj
+    print(paste(w, " found in Ham with frequency ", sprintf("%.4f", w_f[1,'freq_pct']) , " adjusting by ", sprintf("%.4f",adj)))
+  } 
+  else
+  {
+    adj<-log(words_in_ham[1,1])
+    pHam=pHam-adj
+    print(paste(w, " not Found in Ham: adjusting by ", sprintf("%.4f", -1 * adj)))
+
+  }
+  
+
+}
+
+print(paste("Base pHam =  ", pHam))
+print(paste("Base pSpam =  ", pSpam))
+
+# the blanket adjustment is the percentage of mail
+pSpam = pSpam + log(pct_spam)
+pHam = pHam   + log(pct_ham)
+
+print(paste("Final pHam =  ", sprintf("%.4f", pHam)))
+print(paste("Final pSpam =  ", sprintf("%.4f", pSpam)))
+
+
+if (pHam < pSpam)
+{
+  print("The message is SPAM")
+}
+else
+{
+  print("The message is ham")
+  
+}
+
+  
+  
+}
+
+```
+
+<br><br>
+Call it with something spammy.
+<br><br>
+
+```{r}
+Classify("call now for free prize")
+```
+
+
+
+
+<br><br>
+Call it with something normal.
+<br><br>
+
+```{r}
+Classify("please see attached need good answer by tomorrow")
+```
+
+
+
+
+
+
+***
+# References
+***
+<br>
+
+<!-- Mala Deep  -->
+<p><a name=bib-one></a><a href="#cite-one">[1]</a> [The Ultimate Guide To SMS: Spam or Ham Classifier](https://towardsdatascience.com/the-ultimate-guide-to-sms-spam-or-ham-detector-aec467aecd85) </p>
+<br>
+
+
+
+<!-- Tejan Karmali python -->
+<p><a name=bib-two></a><a href="#cite-two">[2]</a> [Spam Classifier in Python from scratch](https://towardsdatascience.com/spam-classifier-in-python-from-scratch-27a98ddd8e73) </p>
+<br>
+
+
+<!-- Deepal Dsilva -->
+<p><a name=bib-three></a><a href="#cite-three">[3]</a> [Ham or Spam? SMS Text Classification with Machine Learning
+A Naive Bayes Implementation in R](https://medium.com/tech-career-nuggets/sms-text-classification-a51defc2361c) </p>
+
+<br>
+
+<!-- this is a data607 project -->
+
+<p><a name=bib-four></a><a href="#cite-four">[4]</a> [Building a Spam Ham Classifier](https://rpubs.com/salmaeng/spam_ham_classifier) </p>
+
+<br>
+
+<!-- Mandy Gu  -->
+<p><a name=bib-five></a><a href="#cite-five">[5]</a> [Spam or Ham: Introduction to Natural Language Processing](https://towardsdatascience.com/spam-or-ham-introduction-to-natural-language-processing-part-2-a0093185aebd) </p>
+
+<br>
+
+<!-- Tejan Karmali code -->
+<p><a name=bib-six></a><a href="#cite-six">[6]</a> [Ham or Spam? SMS Text Classification with Machine Learning
+A Naive Bayes Implementation in R](https://github.com/tejank10/Spam-or-Ham) </p>
+
+
+
+
+
+
