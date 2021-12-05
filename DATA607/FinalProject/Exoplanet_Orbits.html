@@ -14677,7 +14677,7 @@ It is likely rocky, and exists within the habitable zone of its K-type main-sequ
     <span class="n">bins_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;bins&#39;</span><span class="p">])</span>
     <span class="n">bins_df</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">])</span>
     <span class="n">display_without_index</span><span class="p">(</span><span class="n">bins_df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">bin_edges</span>
+<span class="c1">#    return bin_edges</span>
     
     
     
@@ -14929,7 +14929,7 @@ It is likely rocky, and exists within the habitable zone of its K-type main-sequ
 
 <span class="n">exo_days_df</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exo_days_df</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">update_method</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
-<span class="n">exo_days_df</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+<span class="c1"># exo_days_df[&#39;method&#39;].unique()</span>
 </pre></div>
 
      </div>
@@ -15243,7 +15243,7 @@ the float format as %d for integer</strong>
 <h1 id="COCONUTS-2-b">COCONUTS-2 b<a class="anchor-link" href="#COCONUTS-2-b">&#182;</a></h1><hr>
 <p><br><br></p>
 <figure>
-  <img src="https://github.com/TheReallyBigApple/CunyAssignments/raw/main/DATA607/FinalProject/coconuts2b.webp" alt="coconuts 2b" style="width:100%">
+  <img src="https://github.com/TheReallyBigApple/CunyAssignments/raw/main/DATA607/FinalProject/coconuts2b.webp" alt="coconuts 2b" style="width:80%">
   <figcaption>Artists rendition of coconuts 2-b.</figcaption>
 </figure><p><br><br>
 Coconuts 2B takes <b><i>1.1 Million years</i></b> or 402 million days to complete one orbit of its star.
@@ -15411,8 +15411,8 @@ After that HR 8799 b and c take 4655 and 189 years respectively.</p>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p><br><br><br><br><br><br><br><br><br><br><br><br>
-<strong>If we remove Coconust 2-B, its still skewed, if we remove the next 5 its still skewed.</strong>
+<h5><br><br><br><br><br><br><br><br><br><br><br><br></h5>
+<p><strong>If we remove the 5 largest, its still skewed, if we continue to remove the next 5 again and again, its still skewed.</strong>
 <br></p>
 
 </div>
@@ -15459,10 +15459,6 @@ After that HR 8799 b and c take 4655 and 189 years respectively.</p>
 <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">exo_days_df</span><span class="p">[</span><span class="s2">&quot;orb_days&quot;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Next 5 Longest Removed&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-
-
-<span class="n">display_the_biggest</span><span class="p">(</span><span class="n">exo_days_df</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15547,6 +15543,27 @@ After that HR 8799 b and c take 4655 and 189 years respectively.</p>
 
 </div>
 
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p><br><br><br><br><br><br><br><br><br><br><br><br>
+<strong>Lets look at the next 5 largest.</strong></p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_the_biggest</span><span class="p">(</span><span class="n">exo_days_df</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
 </div>
 
 </div>
@@ -15758,7 +15775,33 @@ So for example, CFHTWIR-Oph 98 has an orbit of 8040000 days. So e to the power o
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p><strong>So, at least on a logarithmic scale, Earth is 1.5 standard deviations form the norm. If we continue to eliminate the top 5% again and again, we continue to revisit highly skewed histograms that look the same. In fact if we were to segregate the planets with orbits under 50 days we get...</strong></p>
+<p><strong>3 out of 4 exoplanets have a orbit less than 50 days.</strong></p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">exo_day_gt_50</span><span class="o">=</span><span class="n">exo_days_df</span><span class="p">[(</span><span class="n">exo_days_df</span><span class="p">[</span><span class="s2">&quot;orb_days&quot;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">50</span><span class="p">)]</span>
+<span class="n">exo_day_lt_50</span><span class="o">=</span><span class="n">exo_days_df</span><span class="p">[(</span><span class="n">exo_days_df</span><span class="p">[</span><span class="s2">&quot;orb_days&quot;</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">50</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Orbit durations &gt; 50 : &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">exo_day_gt_50</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Orbit durations &lt; 50 : &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">exo_day_lt_50</span><span class="p">))</span>
+
+<span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;The percentage of planets with orbits greater than 50 days is just </span><span class="si">{:0.2%}</span><span class="s2"> &quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">txt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">exo_day_gt_50</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exo_days_df</span><span class="p">)))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p><strong>Finally if we isolate the orbits less than 50 days, our data looks a little normal.</strong></p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -15767,17 +15810,7 @@ So for example, CFHTWIR-Oph 98 has an orbit of 8040000 days. So e to the power o
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[93]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">exo_day_gt_50</span><span class="o">=</span><span class="n">exo_days_df</span><span class="p">[(</span><span class="n">exo_days_df</span><span class="p">[</span><span class="s2">&quot;orb_days&quot;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">50</span><span class="p">)]</span>
-<span class="n">exo_day_lt_50</span><span class="o">=</span><span class="n">exo_days_df</span><span class="p">[(</span><span class="n">exo_days_df</span><span class="p">[</span><span class="s2">&quot;orb_days&quot;</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">50</span><span class="p">)]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Orbit durations &gt; 50 : &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">exo_day_gt_50</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Orbit durations &lt; 50 : &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">exo_day_lt_50</span><span class="p">))</span>
-
-
-<span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;The percentage of planets with orbits greater than 50 days is just </span><span class="si">{:0.2%}</span><span class="s2"> &quot;</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">txt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">exo_day_gt_50</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exo_days_df</span><span class="p">)))</span>
-
-
-<span class="n">exo_days_df</span><span class="o">=</span> <span class="n">exo_days_df</span><span class="p">[(</span><span class="n">exo_days_df</span><span class="p">[</span><span class="s2">&quot;orb_days&quot;</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">50</span><span class="p">)]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">exo_days_df</span><span class="o">=</span> <span class="n">exo_days_df</span><span class="p">[(</span><span class="n">exo_days_df</span><span class="p">[</span><span class="s2">&quot;orb_days&quot;</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">50</span><span class="p">)]</span>
 </pre></div>
 
      </div>
