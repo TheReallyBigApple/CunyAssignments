@@ -105,7 +105,7 @@ ui <- fluidPage(
 
       selectInput("method","Choose the method",  choices = factor.methods, selected = factor.methods[1]),
       
-      br(),br(),br(),
+      br(),
 
       selectInput("location","Choose the location",  choices = c("ALL", "Ground", "Space"), selected = "ALL"),
       
@@ -116,7 +116,7 @@ ui <- fluidPage(
         value = c( 0, 1),
         min=0,  max=1,    step=.01
       ),      
-      br(),br(),br(),
+      br(),
 
       numericRangeInput(
         inputId = "duration_id", label = "Duration Range (Days):",
@@ -124,7 +124,7 @@ ui <- fluidPage(
        min=0, step=1000
       ),
 
-      br(),br(),br(),
+      br(),
       
       numericRangeInput(
         inputId = "inclination_id", label = "Inclination (Degrees):",
@@ -140,7 +140,9 @@ ui <- fluidPage(
       em("Check To Omit Records with No Value"),
       checkboxInput("rm.na_inclination", label = "Inclination", value = FALSE),
       checkboxInput("rm.na_orientation", label = "Orientation", value = FALSE),
-    
+      checkboxInput("rm.na_distance", label = "Distance", value = FALSE),
+      checkboxInput("rm.na_eccentricity", label = "Eccentricity", value = FALSE),
+     
       br(),br(),br(),
       actionButton("submitter","Submit"),
       actionButton("reset_input", "Reset")
@@ -178,7 +180,7 @@ ui <- fluidPage(
             ),
         tabPanel("Reference",
                  br(),br(),
-                 br(),br(),br(),br(),br(),
+                 
                  
                  HTML('
                        <style type="text/css">
@@ -230,8 +232,8 @@ ui <- fluidPage(
     
                  br(),br(),br(), 
                  
-                 helpText(a(href="http://stat.duke.edu/~mc301/shiny/applets.html", target="_blank", "View Presentation"))
-    
+                 helpText(a(href="http://htmlpreview.github.io/?https://github.com/TheReallyBigApple/CunyAssignments/blob/main/DATA607/FinalProject/Exoplanet_Orbits.html", target="_blank", "View Presentation")),
+                 br(),br(),br()
         )
       
         
@@ -281,8 +283,10 @@ server <- function(input, output, session) {
       ss_tmp.df<-subset(ss_tmp.df, release_date >= input$date_range[1] & release_date <= input$date_range[2] )
       print(nrow(ss_tmp.df))
 
+      print(input$duration_id[1])
+      print(input$duration_id[2])
 
-      ss_tmp.df<-subset(ss_tmp.df, duration >= input$duration_id[1] & duration <= input$duration_id[2] )
+      ss_tmp.df<-subset(ss_tmp.df, is.na(duration) | (duration >= input$duration_id[1] & duration <= input$duration_id[2]) )
       print(nrow(ss_tmp.df))
 
       
@@ -302,6 +306,15 @@ server <- function(input, output, session) {
         ss_tmp.df<- ss_tmp.df[!is.na(ss_tmp.df$orientation), ]    
       }
 
+      if (input$rm.na_eccentricity) {
+        ss_tmp.df<- ss_tmp.df[!is.na(ss_tmp.df$eccentricity), ]    
+      }
+      
+      if (input$rm.na_distance) {
+        ss_tmp.df<- ss_tmp.df[!is.na(ss_tmp.df$distance), ]    
+      }
+      
+      
       return(ss_tmp.df)
     })
    
