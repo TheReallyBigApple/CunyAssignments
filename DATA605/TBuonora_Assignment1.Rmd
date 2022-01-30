@@ -1,0 +1,426 @@
+---
+title: "Data 605: Week 1"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+```
+
+
+
+<br>
+<font size="5" color="purple">Linear Transformations on a Generic Graphic</font>
+<br>
+
+
+
+<br>
+
+This exercise builds a graphic using a matrix or table of coordinates that define smaller rectangles.
+
+<br>
+
+Then it applies a 2X2 transformation matrix to alter the graphic in several ways. It displays the animations in an X Window.
+
+<br>
+
+The X11 plots are drawn with fig.show='hide' so that this document does not display the many plots.
+
+<br>
+
+
+<br>
+
+## Constants.
+
+<br>
+
+<br>
+This constant controls the density of dots throught the entire plot.
+<br>
+
+
+```{r constants}
+
+DEPTH_OF_DOTS<-50         # number of plot points within a unit
+
+```
+
+
+## Generic functions.
+
+<br>
+These 2 functions create arrays of x,y points that populate any box within a nXn grid, based on 4 parameters.
+<br>
+
+
+
+```{r pop_arrays}
+
+# Every box can be built with 4 parameters, these 2 functions share parameters since they need to be conformable
+
+
+pop_x_array<-function(beg,end,x_axis_repeats, y_axis_repeats) {
+  
+  return(c(rep(seq(beg,end,length.out = x_axis_repeats),y_axis_repeats)))
+}
+
+
+# the x_axis_repeats is imortant bcuz every x point needs a y point
+
+pop_y_array<-function(beg,end,x_axis_repeats, y_axis_repeats) {
+  
+ return(sort(rep(seq(beg,end,length.out = y_axis_repeats),x_axis_repeats)))
+}
+
+```
+
+
+<br>
+
+This one applys a transformation matrix to an x,y array.
+
+<br>
+
+
+```{r plot_transformation}
+
+
+
+plot_transformation<-function(s,x_array,y_array, main_title) {
+
+  # get the abcd of the transformation matrix
+a<-s[1,1]
+b<-s[1,2]
+c<-s[2,1]
+d<-s[2,2]
+
+
+# create empty vectors
+x_new<-c()
+y_new<-c()
+
+for(i in 1:length(x_array)) {
+  x_pt<-x_array[i]            # get the x,y points
+  y_pt<-y_array[i]
+  
+   
+  x_pt_new<-a * x_pt + b * y_pt
+  y_pt_new<-c * x_pt + d * y_pt
+  x_new<-append(x_new,x_pt_new)
+  y_new<-append(y_new,y_pt_new)
+  
+}
+
+  plot(x_new,y_new, xlim = c(-1,1), ylim = c(-1,1), main=main_title)
+}
+
+
+```
+
+
+<br>
+
+This one accepts a theta in degrees.
+
+<br>
+
+It converts it to <b><i>radians</i></b> to create the trig rotation matrix. 
+
+<br> 
+
+Then it invokes plot_transformation()
+
+<br>
+
+
+```{r}
+
+plot_rotated<-function(degrees,x,y) {
+  
+  theta<-degrees*pi/180
+  a<-cos(theta)
+  b<-sin(theta)*-1
+  c<-sin(theta)
+  d<-cos(theta)
+
+  s<-matrix(c(a, b, c, d), byrow = TRUE, ncol = 2)
+
+  plot_transformation(s,x,y, "Rotation")
+
+}
+
+```
+
+
+
+
+<br>
+
+## Build the Graphic
+
+<br>
+
+We build a graphic by constructing seperate rectangles.
+
+
+<br>
+Set up all the x,y points that define the smaller rectangles. 
+<br>
+
+
+```{r build_main_image}
+
+
+x_y_points<-c(0 , 0.35 , 0.8 , 0.65, 32,     # top of T
+      0.15 , 0.2 , 0 , 0.65, 200,            # bottom of T
+      0.65 , 0.9 , 0.8 , 0.64, 200,           # top of B
+      0.65 , 0.9 , 0.48 , 0.32, 30,              # middle of B
+      0.65 , 0.9 , 0.16 , 0, 30,
+      0.65 , 0.7 , 0.64 , 0.48, 30,
+      0.65 , 0.7 , 0.32 , 0.16, 30,
+      0.85 , 0.9 , 0.64 , 0.48, 30,
+      0.85 , 0.9 , 0.32 , 0.16, 30)
+
+points_matrix <- matrix(x_y_points, byrow = TRUE, ncol = 5)
+
+```
+
+
+
+<br>
+Loop through the table, and pass the values to the plotting function.
+<br>
+
+```{r display_main_image}
+
+
+x_points<-c()
+y_points<-c()
+
+for(row in 1:nrow(points_matrix)) {
+    x_beg<-points_matrix[row, 1]
+    x_end<-points_matrix[row, 2]
+    y_beg<-points_matrix[row, 3]
+    y_end<-points_matrix[row, 4]
+    y_axis_repeats<-points_matrix[row, 5]
+    x_axis_repeats<-as.integer(abs(x_end-x_beg)*DEPTH_OF_DOTS)
+  
+    x_points_tmp<-pop_x_array(x_beg,x_end,x_axis_repeats, y_axis_repeats)
+    y_points_tmp<-pop_y_array(y_beg,y_end,x_axis_repeats, y_axis_repeats)
+    
+   
+    x_points<-c(x_points,x_points_tmp)
+    y_points<-c(y_points,y_points_tmp)
+}
+
+
+plot(x_points,y_points,pch='.')
+
+```
+
+
+
+
+
+***
+
+## Shear
+
+***
+
+<br>
+Shearing is when axis is fixed and the other moves.
+<br>
+Either
+<br>
+
+$$\begin{bmatrix} 	1&0\\ \lambda&1\\		\end{bmatrix}$$
+
+or
+
+<br>
+$$\begin{bmatrix} 	1&\lambda\\ 0&1\\		\end{bmatrix}$$
+<br>
+
+```{r shearing, fig.show='hide'}
+
+x11(width = 10,  height = 5, title="Shearing", display = "", bg="bisque")
+
+for (t in seq(0.5,-0.5,by=-.1)) {
+
+s<- matrix(c(1, t, 0, 1), byrow = TRUE, ncol = 2)
+Sys.sleep(.2)
+plot_transformation(s,x_points,y_points, "Shear")
+
+}
+
+for (t in seq(0.5,-0.5,by=-.1)) {
+
+s<- matrix(c(1, 0, t, 1), byrow = TRUE, ncol = 2)
+Sys.sleep(.2)
+plot_transformation(s,x_points,y_points, "Shear")
+
+}
+
+
+```
+
+
+
+***
+
+## Scaling
+
+***
+
+
+<br>
+Scaling is when increase x or y but the direction stays the same.
+<br>
+Either
+<br>
+
+
+$$\begin{bmatrix} 	1&0\\ 0&\lambda\\		\end{bmatrix}$$
+
+or
+
+<br>
+$$\begin{bmatrix} 	\lambda&0\\ 0&1\\		\end{bmatrix}$$
+
+
+```{r fig.show='hide'}
+
+x11(width = 10,  height = 5, title="Scaling", display = "", bg="light blue")
+
+
+for (t in seq(1,1.5,by=.1)) {
+
+s<- matrix(c(t, 0, 0, 1), byrow = TRUE, ncol = 2)
+Sys.sleep(.2)
+plot_transformation(s,x_points,y_points, "Scaling - Dilation")
+
+}
+
+
+for (t in seq(1.5, .5, by=-.1)) {
+
+s<- matrix(c(t, 0, 0, 1), byrow = TRUE, ncol = 2)
+Sys.sleep(.2)
+plot_transformation(s,x_points,y_points, "Scaling - Contraction")
+
+}
+
+```
+
+
+
+
+
+***
+
+## Rotating
+
+***
+
+<br>
+
+The trig paradigm is that we apply the following:
+
+<br>
+
+$$\begin{bmatrix} 	cos(\theta)&-sin(\theta)\\ sin(\theta)&cos(\theta)\\		\end{bmatrix}$$
+
+<br>
+
+This means as our a-d values approach 1 the b-c values approach zero and vica versa
+<br>
+
+
+
+<br>
+
+The function requires radians. Our theta is in degrees to make it easier to understand.
+
+<br>
+
+
+
+```{r echo=TRUE, fig.show='hide'}
+x11(width = 10,  height = 5, title="Rotation", display = "", bg="green")
+
+for (theta in seq(0,360,by=10)) {
+
+  Sys.sleep(.1)
+  plot_rotated(theta,x_points,y_points)
+  
+}
+
+
+```
+
+
+
+
+
+
+
+***
+
+## Projection
+
+***
+
+<br>
+Projection infers that the original shape remains the same. Its just displaced somehow.
+<br>
+There are many articles that describe it in terms of camera lenses or other complex applications.
+<br>
+These simple transformation matrices produce a *reflection*.
+<br>
+
+<br>
+This
+<br>
+
+
+$$\begin{bmatrix} 	1&0\\ 0&-1\\		\end{bmatrix}$$
+
+and this
+
+<br>
+$$\begin{bmatrix} 	-1&0\\ 0&1\\		\end{bmatrix}$$
+
+```{r projection, fig.show='hide'}
+
+x11(width = 10,  height = 5, title="Projection/Reflection", display = "", bg="bisque")
+
+
+s<- matrix(c(1, 0, 0, -1), byrow = TRUE, ncol = 2)
+Sys.sleep(2)
+plot_transformation(s,x_points,y_points, "Projection")
+
+
+s<- matrix(c(-1, 0, 0, 1), byrow = TRUE, ncol = 2)
+Sys.sleep(2)
+plot_transformation(s,x_points,y_points, "Projection")
+
+
+
+
+```
+
+
+
+
+
+
