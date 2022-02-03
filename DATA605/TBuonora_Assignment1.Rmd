@@ -14,6 +14,9 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
 ```
 
+```{r}
+library(animation)
+```
 
 
 <br>
@@ -32,28 +35,39 @@ Then it applies a 2X2 transformation matrix to alter the graphic in several ways
 
 <br>
 
-The X11 plots are drawn with fig.show='hide' so that this document does not display the many plots.
+The X11 plots are drawn with fig.show='hide' and only the packaged animation is shown here.
 
 <br>
 
 
+<center><b>Animation of all Transformations</b></center>
+
+<br>
+<center><img src="C:\\Users\\arono\\source\\R\\Data605\\week1_animation.gif" width="800"  height="600"></center>
+<br>
+<br>
 <br>
 
 ## Constants.
 
 <br>
 
-<br>
-This constant controls the density of dots throught the entire plot.
-<br>
-
 
 ```{r constants}
 
 DEPTH_OF_DOTS<-50         # number of plot points within a unit
-
+SLEEP_SECONDS<-0          # how long to sleep between frames
 ```
 
+
+
+
+```{r}
+
+dev.control('enable')
+
+myani=ani.record(reset = TRUE, replay.cur = FALSE)
+```
 
 ## Generic functions.
 
@@ -83,10 +97,27 @@ pop_y_array<-function(beg,end,x_axis_repeats, y_axis_repeats) {
 
 ```
 
+```{r plot_it}
+
+plot_it <-function(x_array,y_array, main_title) {
+  Sys.sleep(SLEEP_SECONDS)
+  plot(x_array,y_array, xlim = c(-1,1), ylim = c(-1,1), main=main_title)
+  ani.record()
+
+}
+```
 
 <br>
 
-This one applys a transformation matrix to an x,y array.
+Below are 2 transformation algorithms. 
+
+<br>
+
+The first uses the R `%*%` operator to perform a dot product operation.
+
+<br>
+
+The second does the same thing iteratively and explicitly.
 
 <br>
 
@@ -94,8 +125,20 @@ This one applys a transformation matrix to an x,y array.
 ```{r plot_transformation}
 
 
-
 plot_transformation<-function(s,x_array,y_array, main_title) {
+
+  rbind_array<-rbind(x_array, y_array)
+
+  new_matrix<-s%*%rbind_array
+  x_new<-new_matrix[1,]
+  y_new<-new_matrix[2,]
+  
+  plot_it(x_new,y_new, main=main_title)
+}
+
+
+
+plot_transformation2<-function(s,x_array,y_array, main_title) {
 
   # get the abcd of the transformation matrix
 a<-s[1,1]
@@ -120,7 +163,8 @@ for(i in 1:length(x_array)) {
   
 }
 
-  plot(x_new,y_new, xlim = c(-1,1), ylim = c(-1,1), main=main_title)
+  plot_it(x_new,y_new, main=main_title)
+
 }
 
 
@@ -129,7 +173,7 @@ for(i in 1:length(x_array)) {
 
 <br>
 
-This one accepts a theta in degrees.
+This one plots the rotation. It accepts a theta in degrees.
 
 <br>
 
@@ -173,7 +217,9 @@ We build a graphic by constructing seperate rectangles.
 
 
 <br>
+
 Set up all the x,y points that define the smaller rectangles. 
+
 <br>
 
 
@@ -197,8 +243,11 @@ points_matrix <- matrix(x_y_points, byrow = TRUE, ncol = 5)
 
 
 <br>
+
 Loop through the table, and pass the values to the plotting function.
+
 <br>
+
 
 ```{r display_main_image}
 
@@ -258,7 +307,7 @@ x11(width = 10,  height = 5, title="Shearing", display = "", bg="bisque")
 for (t in seq(0.5,-0.5,by=-.1)) {
 
 s<- matrix(c(1, t, 0, 1), byrow = TRUE, ncol = 2)
-Sys.sleep(.2)
+
 plot_transformation(s,x_points,y_points, "Shear")
 
 }
@@ -266,7 +315,7 @@ plot_transformation(s,x_points,y_points, "Shear")
 for (t in seq(0.5,-0.5,by=-.1)) {
 
 s<- matrix(c(1, 0, t, 1), byrow = TRUE, ncol = 2)
-Sys.sleep(.2)
+
 plot_transformation(s,x_points,y_points, "Shear")
 
 }
@@ -284,9 +333,13 @@ plot_transformation(s,x_points,y_points, "Shear")
 
 
 <br>
+
 Scaling is when increase x or y but the direction stays the same.
+
 <br>
+
 Either
+
 <br>
 
 
@@ -295,6 +348,7 @@ $$\begin{bmatrix} 	1&0\\ 0&\lambda\\		\end{bmatrix}$$
 or
 
 <br>
+
 $$\begin{bmatrix} 	\lambda&0\\ 0&1\\		\end{bmatrix}$$
 
 
@@ -306,7 +360,6 @@ x11(width = 10,  height = 5, title="Scaling", display = "", bg="light blue")
 for (t in seq(1,1.5,by=.1)) {
 
 s<- matrix(c(t, 0, 0, 1), byrow = TRUE, ncol = 2)
-Sys.sleep(.2)
 plot_transformation(s,x_points,y_points, "Scaling - Dilation")
 
 }
@@ -315,7 +368,6 @@ plot_transformation(s,x_points,y_points, "Scaling - Dilation")
 for (t in seq(1.5, .5, by=-.1)) {
 
 s<- matrix(c(t, 0, 0, 1), byrow = TRUE, ncol = 2)
-Sys.sleep(.2)
 plot_transformation(s,x_points,y_points, "Scaling - Contraction")
 
 }
@@ -359,10 +411,7 @@ The function requires radians. Our theta is in degrees to make it easier to unde
 x11(width = 10,  height = 5, title="Rotation", display = "", bg="green")
 
 for (theta in seq(0,360,by=10)) {
-
-  Sys.sleep(.1)
   plot_rotated(theta,x_points,y_points)
-  
 }
 
 
@@ -381,37 +430,36 @@ for (theta in seq(0,360,by=10)) {
 ***
 
 <br>
-Projection infers that the original shape remains the same. Its just displaced somehow.
-<br>
-There are many articles that describe it in terms of camera lenses or other complex applications.
-<br>
-These simple transformation matrices produce a *reflection*.
-<br>
-
-<br>
-This
+The next 2 flatten $R^2$ to $R^1$, then the next 2 produce *reflections*.
 <br>
 
 
-$$\begin{bmatrix} 	1&0\\ 0&-1\\		\end{bmatrix}$$
 
-and this
+
+$\begin{bmatrix} 	0&0\\ 0&1\\		\end{bmatrix}$ and $\begin{bmatrix} 	1&0\\ 0&0\\		\end{bmatrix}$
+
+$\begin{bmatrix} 	1&0\\ 0&-1\\		\end{bmatrix}$ and $\begin{bmatrix} 	-1&0\\ 0&1\\		\end{bmatrix}$
+
 
 <br>
-$$\begin{bmatrix} 	-1&0\\ 0&1\\		\end{bmatrix}$$
+
 
 ```{r projection, fig.show='hide'}
 
 x11(width = 10,  height = 5, title="Projection/Reflection", display = "", bg="bisque")
 
 
-s<- matrix(c(1, 0, 0, -1), byrow = TRUE, ncol = 2)
-Sys.sleep(2)
+s<- matrix(c(0, 0, 0, 1), byrow = TRUE, ncol = 2)
 plot_transformation(s,x_points,y_points, "Projection")
 
 
+s<- matrix(c(1, 0, 0, 0), byrow = TRUE, ncol = 2)
+plot_transformation(s,x_points,y_points, "Projection")
+
+s<- matrix(c(1, 0, 0, -1), byrow = TRUE, ncol = 2)
+plot_transformation(s,x_points,y_points, "Projection")
+
 s<- matrix(c(-1, 0, 0, 1), byrow = TRUE, ncol = 2)
-Sys.sleep(2)
 plot_transformation(s,x_points,y_points, "Projection")
 
 
@@ -420,6 +468,11 @@ plot_transformation(s,x_points,y_points, "Projection")
 ```
 
 
+```{r}
+
+saveGIF(ani.replay(), img.name = "tryme", convert='magick', clean=TRUE)
+
+```
 
 
 
