@@ -1,0 +1,198 @@
+---
+title: "Data 605: Week 3"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+<style type="text/css">
+                      .tab { margin-left: 60px; }
+</style>
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+```
+
+
+
+<br><br><br>
+
+<br>
+<font size="7" color="purple">Rank and Eigen Vectors</font>
+<br>
+<br><br><br>
+
+
+## Rank
+
+<br>
+
+
+<font size="5" color="blue"> What is the rank of the matrix A ? </font>
+
+
+<br>
+
+$$A \ = \ \begin{bmatrix} 	1&2&3&4\\ -1&0&1&3\\ 0&1&-2&1 \\5&4&-2&-3		\end{bmatrix}$$
+<br>
+
+
+If a square matrix has a determinant, then we immediately know that no row can be eliminated
+as being linearly dependent on any other row or linear combination of rows.
+
+<br>
+
+
+```{r matrix_a_determinant}
+
+
+a<-matrix(c(1, 2, 3, 4, -1, 0, 1, 3,0, 1, -2, 1,5, 4, -2, -3), byrow = TRUE, ncol = 4)
+det(a)
+
+
+```
+
+
+<br>
+
+So in this case, we know that A is full rank, its rank is 4.
+
+
+
+```{r matrix_a_rank}
+
+Matrix::rankMatrix(a)[1]
+
+```
+
+
+
+
+
+
+<br>
+<font size="5" color="blue">
+Given an mxn matrix where m > n, what can be the maximum rank? The minimum rank, assuming that the matrix is non-zero?
+</font>
+
+<br>
+
+The maximum rank of m rows, is m. That would be when n=m, meaning you have enough variables and independent equations
+to find the intersection all n coefficients.
+
+<br>
+
+The minimum is 1, which means you only have 1 independent equation.
+
+<br>
+
+<font size="5" color="blue">What is the rank of matrix B?</font>
+
+<br>
+
+
+$$A \ = \ \begin{bmatrix} 	1&2&1\\ 3&6&3\\ 2&4&2		\end{bmatrix}$$
+<br>
+One can see pretty easily that all 3 are dependent so the rank is 1 and the determinent is 0
+<br>
+
+```{r matrix_rank}
+
+a<-matrix(c(1, 2, 1, 3, 6, 3, 2, 4,2), byrow = TRUE, ncol = 3)
+det(a)
+
+Matrix::rankMatrix(a)[1]
+
+```
+
+
+
+<br><br><br>
+
+
+
+## Eigen Values and Vectors
+
+<br>
+<font size="5" color="blue">
+Compute the eigenvalues and eigenvectors of the matrix A. You'll need to show your
+work. You'll need to write out the characteristic polynomial and show your solution.
+</font>
+<br>
+
+<br>
+The Eigen Values are valid for all vectors with the indicated ratio between $X_1$ and $X_2$ and $X_3$
+<br>
+
+<center><img src="C:\\Users\\arono\\source\\R\\Data605\\HW3.jpg"></center>
+
+
+
+We can double check our work.
+
+<br>
+
+$$\lambda \ = 6$$
+
+<br>
+
+```{r eigen1}
+
+a<-matrix(c(1, 2, 3, 0, 4, 5, 0, 0,6), byrow = TRUE, ncol = 3)
+
+b<-c(8/5, 5/2,1)
+a %*% b
+
+6 * b   
+
+
+
+```
+
+
+<br>
+
+$$\lambda \ = 4$$
+
+<br>
+
+```{r eigen2}
+
+a<-matrix(c(1, 2, 3, 0, 4, 5, 0, 0,6), byrow = TRUE, ncol = 3)
+
+b<-c(1, 3/2,0)
+a %*% b
+
+4 * b   
+
+
+
+```
+
+<br>
+
+
+
+$$\lambda \ = 1$$
+
+<br>
+
+```{r eigen3}
+
+a<-matrix(c(1, 2, 3, 0, 4, 5, 0, 0,6), byrow = TRUE, ncol = 3)
+
+b<-c(1, 0,0)
+a %*% b
+1 * b   
+
+
+
+```
