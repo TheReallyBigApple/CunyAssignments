@@ -1,0 +1,347 @@
+---
+title: "Data 605: Week 4"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+<style type="text/css">
+                      .tab { margin-left: 60px; }
+</style>
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+
+
+library(jpeg)    # for readJPEG
+
+```
+
+
+
+<br><br><br>
+
+<br>
+<font size="7" color="purple">Eigen Image Variability</font>
+<br>
+<br><br><br>
+
+
+Eigen Images or Eigen Faces is a Classification approach that is often used for such things as facial recognition.
+
+<br>
+
+This assignment will calculate Eigen Vectors for a set of sneaker jpegs, and look at the variablity.
+
+<br>
+
+Along the way, it will review some of the key concepts of Eigen Decomposition
+
+<br>
+
+
+***
+
+# Consume The Images
+
+***
+
+
+<br>
+
+
+Create a matrix in which each image is loaded into one column. 
+
+<br>
+
+The RGB colors are 3 vectors so we will layer them into one vector.
+
+<br>
+
+Note : 
+- length(names) is 17 for the 17 images in the local directory
+- prod(dim(img_template) is the product of 3 dimensions: row, column,  and color composite layer (RGB)
+
+<br>
+
+
+```{r consume_images}
+
+setwd("C:\\Users\\arono\\CUNY\\DATA 605 Computational Math\\jpgs")
+
+path<-'C:\\Users\\arono\\CUNY\\DATA 605 Computational Math\\jpgs'
+pic<-'\\RC_2500x1200_2014_us_54106.jpg'
+
+pathnpic<-paste0(path,pic)
+
+img_template<-readJPEG(pathnpic)    # jpeg package
+
+# imageShow(img_template)            # OpenImageR package
+
+
+
+names <- list.files(path,pattern = "jpg")
+
+# create a matrix, one column per image, with the number of pixels in each image
+data <- matrix(0, length(names), prod(dim(img_template))) 
+
+for (i in 1:length(names)) {
+  im <- readJPEG(names[i])
+  r  <- as.vector(im[,,1])
+  g  <- as.vector(im[,,2])
+  b  <- as.vector(im[,,3])
+  
+
+  data[i,] <- t(c(r, g, b))
+}
+
+
+sneakers <- data.frame(x = data)
+
+```
+
+<br><br><br>
+
+***
+
+# Principle Component Analysis
+
+***
+
+
+<br>
+
+PCA is usually referred to as a *dimensionality-reduction method*.
+
+<br>
+
+It reflects the idea that a set of faces, or similar objects, have a shared
+set of visual attributes, and that it is useful to "normalize" the image data before
+assessing variablity.
+
+<br>
+
+The specific steps are <a name=cite-one></a><a href="#bib-one">&#91;1&#93; </a>.
+
+1) Standardize the range of continuous initial variables
+2) Compute the covariance matrix to identify correlations
+3) Compute the eigenvectors and eigenvalues of the covariance matrix to identify the principal components
+4) Create a feature vector to decide which principal components to keep
+5) Recast the data along the principal components axes
+
+<br>
+
+The PCA process isolates "principal components", by ordering the eigen values by variability. 
+
+<br>
+Note SVD or *Singular Value Decomposition* refers to the factorization of an Eigen Matrix <b>A</b> where :
+<br>
+
+$$A \ = \ U\sum{}V$$ 
+
+<br><br>
+
+where <a name=cite-one></a><a href="#bib-two">&#91;2&#93; </a>
+<br>
+&emsp;&emsp;&emsp;&emsp; U = mxn matrix of the orthonormal eigenvectors of $AA^T$
+<br>
+&emsp;&emsp;&emsp;&emsp;  $\sum{}$ = a nxn diagonal matrix of the singular values which are the square roots of the eigenvalues of  $A^TA$
+<br>
+&emsp;&emsp;&emsp;&emsp; V =  transpose of a nxn matrix containing the orthonormal eigenvectors of $A^TA$
+
+<br>
+
+<br>
+We wont be explicitly factoring but we will the scale(), cov() and eigen() to perform PCA and Variance analysis.
+
+<br><br><br>
+
+
+***
+
+# Scale()
+
+***
+
+
+
+<br><br>
+
+scale() *normalizes your data range* in 2 ways
+
+<br>
+
+* when scale=TRUE (the default) it subtracts the mean from each number
+* when center=TRUE (the default) it divides each number by the root mean square
+
+<br>
+
+The root mean square is 
+
+<br>
+
+$$rms \ = \ \sqrt{\sum_{v_{1}}^{V_{n}} \frac{v_{i}^2}{n-1}}$$
+
+<br>
+
+Note scaling a matrix is a column by column process...
+
+<br>
+
+
+
+```{r scale}
+
+scaled_sneakers<-scale(sneakers)
+
+```
+
+
+<br><br><br>
+
+
+***
+
+# Covariance()
+
+***
+
+
+<br>
+
+Recall that Covariance is the product of X variance and Y variance, and Correlation is the Covariance divided by the standard error.
+
+<br>
+
+The Covariance equation is:
+
+$$ cov(x,y) \ = \ \sum{\frac{(x \ - \ \bar{x} )(y \ - \ \bar{y} )}{n-1}} $$
+
+
+<br>
+
+Applying covariance to a matrix is also a column by column process. 
+
+<br>
+
+Thus the diagonal ( in which x and y are the same ) is just the variance of that column.
+
+<br>
+
+Also worth noting is that the non diagonal elements are symmetrical, that is position [i,j] = position [j,i]
+
+<br>
+
+The R cov() function can throw memory errors on large matrixes but we can avoid them by calculating covariance directly.
+<br>
+
+
+so calculate the covariance of the scaled sneakers data frame by taking the dot product of our scaled matrix and its transpose...
+
+<br>
+
+
+```{r cov}
+
+# not sure why some na's sneaked in...
+
+scaled_sneakers[is.na(scaled_sneakers)] = 1
+
+
+cov_scaled_sneakers<-scaled_sneakers %*% t(scaled_sneakers) / (nrow(scaled_sneakers)-1)
+
+
+```
+
+<br>
+
+
+***
+
+# Variability
+
+***
+
+<br>
+
+Now calculate some of the key variability metrics...
+
+<br>
+
+```{r variability}
+
+eig          <- eigen(cov_scaled_sneakers)
+eigenvalues  <- eig$values
+eigenvectors <- eig$vectors
+
+prop.var <- eigenvalues / sum(eigenvalues)
+cum.var  <- cumsum(eigenvalues) / sum(eigenvalues)
+thres    <- min(which(cum.var > .85))
+
+
+```
+
+<br>
+
+Note how the eigen function ordered the eigenvalues from large to small...
+
+<br>
+
+```{r}
+
+eigenvalues
+
+```
+
+<br>
+
+The cum.var vector is useful to assess which components account for the total variablity.
+
+<br>
+
+
+```{r cum.var}
+
+cum.var
+
+```
+
+<br>
+
+The thresh variable is essentially telling us that the first 5 components account for 85% of the variablity.
+
+<br>
+
+
+```{r thres}
+
+thres 
+
+```
+
+
+
+***
+
+# References
+
+***
+<br>
+
+
+<p><a name=bib-one></a><a href="#cite-one">[1]</a> [Step By Step Analysis of PCA](https://builtin.com/data-science/step-step-explanation-principal-component-analysis) </p>
+<br>
+
+
+<p><a name=bib-one></a><a href="#cite-two">[2]</a> [Singular Value Decomposition (SVD)](https://www.geeksforgeeks.org/singular-value-decomposition-svd/) </p>
+<br>
+
+
