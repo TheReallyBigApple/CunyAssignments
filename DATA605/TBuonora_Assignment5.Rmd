@@ -1,0 +1,536 @@
+---
+title: "Data 605: Week 5"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+```
+
+
+<style type="text/css">
+                      .tab { margin-left: 60px; }
+</style>
+
+
+
+
+<br><br><br><br>
+
+<font size="7" color="purple">Probabilities</font>
+<br><br><br>
+
+
+<br><br><br><br>
+
+
+***
+
+## 1) Bayes Formula
+
+***
+
+<b>Sensitivity</b>
+<p class="tab">a test's ability to designate an individual with disease as positive.</p>
+
+<b>Specificity</b> 
+<p class="tab">a test's ability to designate an individual who does not have a disease as negative.</p>
+
+<br><br>
+
+A new test has a 96% sensitivity and a 98% specific.
+
+<br>
+
+Given a .001 prevalence rate, what is the probability that an individual who is reported as positive by the new test actually has the disease?
+
+<br>
+
+
+```{r}
+p_prevalence<-.001
+p_sensitivity<-.96
+p_specificity<-.98
+
+num<-p_sensitivity * p_prevalence
+den<-(p_sensitivity * p_prevalence) + ((1-p_specificity) * (1-p_prevalence))
+
+
+sprintf("The probability that a person with a positive test result actually has the disease is %.6f ",num/den)
+
+
+  
+  
+```
+
+<br>
+
+<font size="4" color="purple">Given that for every 1000 people only 1 has the disease, the majority of positive results will be from people who are not actually infected.</font>
+
+<br>
+
+Health        |  Population  |  Tests Positive  
+------------- | ------------ | ----------------- 
+Infected      |     10,000   |       9,600       
+Not Infected  |  9,990,000   |     199,800  
+------------  | -----------  | ----------------- 
+Total         | 10,000,000   |     209,400
+
+
+
+
+<br><br><br>
+
+
+***
+
+## 2) Binomial
+
+***
+
+
+
+<br>
+
+The probability of your organization receiving a Joint Commission inspection in any given month is .05.
+
+<br>
+
+What is the probability that, after 24 months, you received exactly 2 inspections?
+
+<br>
+
+```{r}
+
+x=2             # number of successes we want to know the probability of
+n=24
+p=.05
+
+round(dbinom(x, size=n, prob=p),4)
+  
+```
+
+<br>
+What is the probability that, after 24 months, you received 2 or more inspections?
+
+<br>
+
+What is the probability that your received fewer than 2 inspections? 
+
+<br>
+
+
+
+```{r}
+
+x=seq(0,1)             # number of successes we want to know the probability of
+n=24
+p=.05
+
+pr<-sum(dbinom(x, size=n, prob=p))
+
+print(paste("The probability of 2 or more is ", round(1-pr,4)))
+
+
+  
+print(paste("The probability of 1 or less is ", round(pr,4)))
+
+```
+
+<br>
+
+What is the standard deviation?
+
+<br>
+
+```{r}
+
+n*p*(1-p)
+
+
+```
+
+<br>
+
+What is the expected number of inspections you should have received? 
+
+<br>
+
+```{r}
+
+n*p
+
+```
+
+<br><br><br>
+
+***
+
+## 3) Poisson
+
+***
+
+
+<br>
+You are modeling the family practice clinic and notice that patients arrive at a rate of 10 per hour. 
+
+<br>
+
+What is the probability that exactly 3 arrive in one hour?
+<br>
+
+
+```{r}
+
+round(dpois(x = 3, lambda = 10),4)
+round(dbinom(3,10,1),4)
+
+```
+
+
+<br>
+
+What is the probability that more than 10 arrive in one hour?
+
+<br>
+
+```{r}
+
+round(1 - ppois(q = 10, lambda = 10),4)
+
+```
+
+<br>
+How many would you expect to arrive in 8 hours?
+
+<br>
+
+<font size="4" color="purple">The expected vaue = the mean = units X lambda so 80</font>
+
+$$\mu \ = \ t * \lambda $$
+
+<br>
+
+<font size="4" color="purple">        so 80</font>
+
+<br><br>
+
+What is the standard deviation of the appropriate probability distribution?
+
+<br>
+
+$$\sigma \ = \ \sqrt{\mu}$$
+
+<font size="4" color="purple">so 8.944272</font>
+
+<br>
+
+If there are three family practice providers that can see 24 templated patients each day, what is the percent utilization and what are your recommendations?
+
+<br>
+<font size="4" color="purple">In a 10 hour day I would expect 100 patients.The capacity of the 3 providers is well below that and not sufficient to handle 100 patients.</font>
+<br>
+
+<br><br><br>
+
+***
+
+## 4) Hypergeometric
+
+***
+
+<br><br>
+
+
+
+Your subordinate is accused of favoring nurses. 
+
+15 are nurses and 15 are not. 
+
+The accuser stated that there were 6 company-paid trips to Disney World. 
+
+The supervisor sent 5 nurses and 1 non-nurse. 
+
+What was the probability of that ? 
+
+<br>
+
+
+```{r}
+
+
+N = 30     #  (Total Population)
+k = 15     #  of success in population
+m = N-k    #  of failure in the population
+
+n = 6      #  of trials
+x = 5      #  of successes you are quantifying the probability
+
+
+round(dhyper(x, m, k, n),4)
+
+
+```
+
+<br>
+
+How many nurses would we have expected your subordinate to send?
+
+<br>
+
+
+```{r}
+
+n * (k / (k + m))
+
+
+```
+
+
+
+
+<br><br><br>
+
+
+***
+
+## 5) Geometric
+
+***
+
+
+
+
+<br>
+
+$$P(X=x) \ = \  (1-P)^{n-1}P$$
+
+
+
+
+<br>
+$$P(X \le x) \ = \  1 - (1 - P^n)$$
+
+$$\sigma \ = \ \sqrt{\frac{1-p}{p^2}}$$
+
+<br>
+Expected Value ( Mean ) =
+<br>
+$$E(X) \ = \ \frac{1}{p} $$
+
+<br>
+
+The probability of being seriously injured in a car crash in an unspecified location is about .1% per hour. 
+
+
+A driver traverses the area for 1200 hours 
+
+What is the probability that the driver will be seriously injured? 
+
+
+```{r}
+
+p=.001
+n=1200
+
+round(1 - (1-p)^n,4)
+
+
+```
+
+
+
+In the course of 15 months? 
+
+```{r}
+
+# its 100 hours per months so
+n=1500
+
+round(1 - (1-p)^n,4)
+
+```
+
+
+What is the expected number of hours that a driver will drive before being seriously injured? 
+
+```{r}
+
+1/p
+
+```
+
+<br>
+
+Given that a driver has driven 1200 hours, what is the probability that he or she will be injured in the next 100 hours?
+
+<br>
+<font size="4" color="purple">The phrase "Given" implies that we are not looking for the probability of 1300 hours of no accidents, just 100 hours.</font>
+<br>
+
+```{r}
+
+n=100
+
+1 - (1-p)^n
+
+```
+
+<br><br><br>
+
+***
+
+## 6) Poisson
+
+***
+
+<br>
+
+
+You are working in a hospital that is running off of a primary generator which fails about once in 1000 hours. 
+    What is the probability that the generator will fail more than twice in 1000 hours? 
+
+
+
+<br>
+
+```{r}
+
+p_fail<-1 - pbinom(2, 1000, .001) 
+sprintf("The probability that the generator will fail more than twice is %.2f", p_fail)
+
+```
+
+
+<font size="4" color="purple">Note: pbinom and ppois are very similar, and return almost the same result (if the rate < 1) </font>
+
+<br>
+`pbinom(2, 1000, .001) `
+`ppois(2, lambda=1)`
+
+<br>
+<font size="4" color="purple">You could also convert the time unit if you think it would improve the distribution.</font>
+
+<br>
+      What is the expected value?
+<br>
+
+<font size="4" color="purple"> .0001 </font>
+
+
+<br><br><br>
+
+***
+
+## 7) Uniform
+
+***
+
+<br>
+
+A surgical patient arrives. The waiting time is uniformly distributed from 0 to 30 minutes.
+
+<br>
+
+What is the probability that this patient will wait more than 10 minutes? 
+
+
+```{r}
+
+# all this is q/(max-min)
+1-punif(q=10, min = 0, max = 30)
+
+```
+
+
+
+
+<br>
+If the patient has already waited 10 minutes, what is the probability that he/she will wait at least another 5 minutes prior to being seen?
+<br>
+```{r}
+
+#  "at least another 5" means 5 or more
+1-punif(q=4, min = 0, max = 20)
+
+```
+
+
+
+
+What is the expected waiting time?
+
+<br>
+
+<font size="4" color="purple"> The midpoint, so 15 minutes. </font>
+
+
+<br><br><br>
+
+
+
+***
+
+## 8) Exponential
+
+***
+
+<br>
+
+
+Your hospital owns an old MRI, which has a manufacturer’s lifetime of about 10 years (expected value). 
+
+Based on previous studies, we know that the failure of most MRIs obeys an exponential distribution. 
+
+What is the expected failure time? 
+
+$$\lambda  \ = \ \frac{1}{E(X)}$$
+
+<br>
+
+<font size="4" color="purple">The expected value is 10 and the rate is .1 </font>
+
+
+<br>
+
+
+What is the standard deviation?
+
+<br>
+
+<font size="4" color="purple">The standard deviation is equal to the mean or Expected Value so .1  </font>
+
+
+<br>
+
+
+
+What is the probability that your MRI will fail after 8 years? 
+<br>
+
+```{r}
+
+round(pexp(8,.1),4)
+
+```
+
+
+Now assume that you have owned the machine for 8 years. 
+Given that you already owned the machine 8 years, what is the probability that it will fail in the next two years?
+
+```{r}
+
+round(pexp(10,.1) - pexp(8,.1),4)
+
+```
+
+
+
